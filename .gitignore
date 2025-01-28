@@ -6,3 +6,6 @@
 
 # virtual environments
 .venv
+
+# ssl certs
+http_ca.crt
