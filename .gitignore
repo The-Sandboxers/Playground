@@ -1,0 +1,8 @@
+# keys
+.env
+
+# OS files
+.DS_Store
+
+# virtual environments
+.venv
