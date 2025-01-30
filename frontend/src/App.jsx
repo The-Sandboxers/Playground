@@ -1,35 +1,76 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useState, useEffect } from 'react';
+// Import Font Awesome icons from react-icons
+import { FaArrowLeft, FaArrowRight, FaThumbsUp, FaThumbsDown } from 'react-icons/fa';
+import './App.css';
 
-function App() {
-  const [count, setCount] = useState(0)
+export default function App() {
+  // Combine all icon states into one object
+  const [clickedIcons, setClickedIcons] = useState({
+    leftArrow: false,
+    rightArrow: false,
+    thumbUp: false,
+    thumbDown: false,
+  });
+
+  // Single function to handle any icon click
+  function handleIconClick(icon) {
+    setClickedIcons((prev) => ({
+      ...prev,
+      [icon]: true,
+    }));
+  }
+
+  // Single useEffect to reset all after 200ms if any are true
+  useEffect(() => {
+    const { leftArrow, rightArrow, thumbUp, thumbDown } = clickedIcons;
+    // If any icon is clicked, trigger a timer
+    if (leftArrow || rightArrow || thumbUp || thumbDown) {
+      const timer = setTimeout(() => {
+        setClickedIcons({
+          leftArrow: false,
+          rightArrow: false,
+          thumbUp: false,
+          thumbDown: false,
+        });
+      }, 200);
+      return () => clearTimeout(timer);
+    }
+  }, [clickedIcons]);
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <div className="app-container">
+      <h1 className="game-title">Your Game Title</h1>
 
-export default App
+      <div className="arrows-container">
+        <FaArrowLeft
+          className={`icon arrow-icon ${clickedIcons.leftArrow ? 'clicked' : ''}`}
+          onClick={() => handleIconClick('leftArrow')}
+        />
+
+        <div className="image-container">
+          <img
+            src="https://via.placeholder.com/300x400?text=Game+Cover"
+            alt="Game Cover"
+            className="game-cover"
+          />
+        </div>
+
+        <FaArrowRight
+          className={`icon arrow-icon ${clickedIcons.rightArrow ? 'clicked' : ''}`}
+          onClick={() => handleIconClick('rightArrow')}
+        />
+      </div>
+
+      <div className="thumbs-container">
+        <FaThumbsUp
+          className={`icon thumb-icon ${clickedIcons.thumbUp ? 'clicked' : ''}`}
+          onClick={() => handleIconClick('thumbUp')}
+        />
+        <FaThumbsDown
+          className={`icon thumb-icon ${clickedIcons.thumbDown ? 'clicked' : ''}`}
+          onClick={() => handleIconClick('thumbDown')}
+        />
+      </div>
+    </div>
+  );
+}
