@@ -1,0 +1,47 @@
+[
+  {
+    "id ": 6,
+    "name ": "PC (Microsoft Windows) ",
+    "versions ": [1, 13, 14, 15, 124, 513, 529, 530, 531, 532, 533, 534]
+  },
+  {
+    "id ": 11,
+    "name ": "Xbox ",
+    "versions ": [77]
+  },
+  {
+    "id ": 167,
+    "name ": "PlayStation 5 ",
+    "versions ": [273, 724]
+  },
+  {
+    "id ": 169,
+    "name ": "Xbox Series X|S ",
+    "versions ": [284, 489]
+  },
+  {
+    "id ": 48,
+    "name ": "PlayStation 4 ",
+    "versions ": [17, 178, 179]
+  },
+  {
+    "id ": 49,
+    "name ": "Xbox One ",
+    "versions ": [78, 180, 185, 188]
+  },
+  {
+    "id ": 3,
+    "name ": "Linux ",
+    "versions ": [44]
+  },
+  {
+    "id ": 14,
+    "name ": "Mac ",
+    "versions ": [45, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 598, 599, 600, 713]
+  },
+  {
+    "id ": 130,
+    "name ": "Nintendo Switch ",
+    "versions ": [173, 282, 503]
+  }
+]
