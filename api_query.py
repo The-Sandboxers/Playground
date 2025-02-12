@@ -35,6 +35,11 @@ def get_platforms():
     # convert list to string (for use in parameters)
     return ', '.join(str(p) for p in plist)
 
+# removes extra beginning and end brackets to keep as one JSON array for output
+def remove_extra_brackets(s):
+    return s.replace("[", ",", 1).rsplit("]", 1)[0]
+
+
 access_token = fetch_access_token_Twitch(TWITCH_SECRET_KEY, TWITCH_CLIENT_ID)
 
 # create IGDB wrapper instance
@@ -43,39 +48,37 @@ wrapper = IGDBWrapper(TWITCH_CLIENT_ID, access_token)
 # get platforms to filter for
 platforms = get_platforms()
 
+# set limits for pulling from api 
 offset = 500
 limit = 500
 
-# unix timestamp for first_release_date is for 1/1/2015 (~ 10 years ago)
+# initial api request
 byte_array = wrapper.api_request(
         'games',
-        f'fields *; where rating_count>50 & category=0 & rating>5 & platforms=({platforms}); limit {limit}; offset 0;')
+        f'fields name; where rating_count>50 & category=0 & rating>5 & platforms=({platforms}); limit {limit}; offset 0;')
 i=1
+# decode to string and remove extra bracket added by api
+result = byte_array.decode()
+result = result.rsplit("]", 1)[0]
+
+# continue grabbing results until there are no more 
 empty_result = False
 while not empty_result:
-    result = wrapper.api_request(
+    temp_result = wrapper.api_request(
             'games',
-            f'fields *; where rating_count>50 & category=0 & rating>5 & platforms=({platforms});  limit {limit}; offset {offset*i};')
-    if result==EMPTY_API_RESULT:
+            f'fields name; where rating_count>50 & category=0 & rating>5 & platforms=({platforms});  limit {limit}; offset {offset*i};')
+    if temp_result==EMPTY_API_RESULT:
         empty_result = True
     else:
-        byte_array+=result
+        # remove extra brackets and append to existing json string
+        temp_result = temp_result.decode()
+        temp_result = remove_extra_brackets(temp_result)
+        result+=temp_result
     i+=1
-    
-#print(byte_array)
-print(type(byte_array))
 
-byte_array = byte_array.decode()
-print(byte_array)
-print(json.dumps(byte_array))
-with open('games.json', 'w') as f:
-    f.write(json.dumps(byte_array, ensure_ascii=True))
+# add last needed bracket
+result +="]"
 
-
-# Consider using webhooks for up to date data.
-
-#& platforms=({platforms})
-#byte_array = byte_array.decode().replace("'", '"')
-
-#with open('games.json', 'w') as f:
-   # json.dump(byte_array, f)
+# write to json file
+with open('esdata/game_data.json', 'w') as f:
+    f.write(json.dumps(result, ensure_ascii=True))
