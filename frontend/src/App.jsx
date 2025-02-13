@@ -39,6 +39,9 @@ export default function App() {
 
   return (
     <div className="app-container">
+      <div className="page-title-container">
+        <h1>Playground!</h1>
+      </div>
       <h1 className="game-title">Your Game Title</h1>
 
       <div className="arrows-container">
