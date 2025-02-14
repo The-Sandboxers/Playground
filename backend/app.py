@@ -7,7 +7,7 @@ from config import ApplicationConfig
 from datetime import timezone, datetime, timedelta
 import redis
 # import users table
-from models import db, User
+from models import db, User, UserGame
 
 
 app = Flask(__name__)
@@ -72,8 +72,8 @@ def register_user():
     
 @app.route("/login", methods=["POST"])
 def login_user():
-    username = request.json["username"]
-    password = request.json["password"]
+    username = request.json.get("username")
+    password = request.json.get("password")
     try:
         user = User.query.filter_by(username=username).first()
         
@@ -96,8 +96,17 @@ def login_user():
 def user_profile():
     username = get_jwt_identity()
     user = User.query.filter_by(username=username).first()
+    all_games_ids = []
+    liked_games_ids = []
+    for game in UserGame.query.filter_by(user_id=user.id).all():
+        all_games_ids.append(game.igdb_id)
+        if game.liked_status == True:
+            liked_games_ids.append(game.igdb_id)
+        
     return jsonify({"username": user.username,
-                    "steam_id": user.steam_id
+                    "steam_id": user.steam_id,
+                    "all_games": all_games_ids,
+                    "liked_games": liked_games_ids
         }), 200
 
 
@@ -124,6 +133,28 @@ def refresh():
     identity = get_jwt_identity()
     access_token = create_access_token(identity=identity)
     return jsonify(access_token=access_token)
+
+# TO-DO: Implement Steam Login
+
+# TO-DO: Add games to users
+@app.route("/add_games", methods=["POST"])
+@jwt_required()
+def add_games():
+    try:
+        username = get_jwt_identity()
+        user = User.query.filter_by(username=username).first()
+        games_list = request.json.get("added_games")
+        added_games = []
+        for game_id in games_list:
+            if UserGame.query.filter_by(user_id=user.id, igdb_id=game_id).first() is None:
+                new_added_game = UserGame(igdb_id=game_id, user_id=user.id)
+                db.session.add(new_added_game)
+                db.session.commit()
+                added_games.append(game_id)
+        return jsonify(user=username, added_games=added_games), 200
+    except:
+        return jsonify(error="Error adding games"), 500
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
