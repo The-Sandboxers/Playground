@@ -1,5 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import Integer, String, ForeignKey
+from sqlalchemy import Integer, String, ForeignKey, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import Optional, List
 
@@ -30,6 +30,10 @@ class UserGame(db.Model):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     igdb_id: Mapped[int] = mapped_column(Integer)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    liked_status: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    played_status: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    favorited_status: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    
     user: Mapped["User"] = relationship(back_populates="games")
     
     def __repr__(self):
