@@ -14,4 +14,5 @@ class ApplicationConfig:
     SQLALCHEMY_DATABASE_URI = "postgresql://postgres:maxsy111@localhost:5432/playground"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ECHO = True
+    STEAM_API_KEY = os.getenv('STEAM_WEB_API_KEY')
     

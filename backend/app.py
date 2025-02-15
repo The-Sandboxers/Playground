@@ -1,10 +1,11 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, redirect, url_for
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager, create_access_token, get_jwt_identity, jwt_required, get_jwt, create_refresh_token
 from flask_migrate import Migrate
 from flask_cors import CORS
 from config import ApplicationConfig
-from datetime import timezone, datetime, timedelta
+from urllib.parse import urlencode
+
 import redis
 # import users table
 from models import db, User, UserGame
@@ -32,9 +33,15 @@ bcrypt = Bcrypt(app)
 redis_client = redis.StrictRedis(host="localhost", port=6379, db=0, decode_responses=True)
 BLACKLISTED_TOKENS_KEY = "blacklisted_tokens"
 
+STEAM_OPENID_URL = "https://steamcommunity.com/openid/login"
+
+STEAM_API_KEY = app.config["STEAM_API_KEY"]
+
 @app.route('/')
 def hello_world():
     return 'Hello, Mom!'
+
+
 
 
 @app.route("/register", methods=["POST"])
@@ -110,22 +117,23 @@ def user_profile():
         }), 200
 
 
-
 @app.route("/logout", methods=["DELETE"])
 @jwt_required(verify_type=False)
 def logout_user():
     token = get_jwt()
     jti = token["jti"]
     ttype = token["type"]
-    redis_client.set(jti, "", ex=ApplicationConfig.JWT_ACCESS_TOKEN_EXPIRES)
+    redis_client.set(jti, "", ex=app.config["JWT_ACCESS_TOKEN_EXPIRES"])
     return jsonify({"msg":"Successfully logged out",
                     "token-type": ttype}), 200
+
 
 @jwt.token_in_blocklist_loader
 def check_if_token_blacklisted(jwt_header, jwt_payload:dict):
     jti = jwt_payload["jti"]
     token_in_redis = redis_client.get(jti)
     return token_in_redis is not None
+
 
 @app.route("/refresh", methods=["POST"])
 @jwt_required(refresh=True)
@@ -134,10 +142,45 @@ def refresh():
     access_token = create_access_token(identity=identity)
     return jsonify(access_token=access_token)
 
+
 # TO-DO: Implement Steam Login
+@app.route("/profile/connect_steam", methods=["GET"])
+@jwt_required()
+def connect_steam():
+    params = {
+        "openid.ns": "http://specs.openid.net/auth/2.0",
+        "openid.mode": "checkid_setup",
+        "openid.return_to": url_for("steam_auth_callback", _external=True),
+        "openid.realm": request.host_url,
+        "openid.identity": "http://specs.openid.net/auth/2.0/identifier_select",
+        "openid.claimed_id": "http://specs.openid.net/auth/2.0/identifier_select"
+    }
+    return redirect(f"{STEAM_OPENID_URL}?{urlencode(params)}")
+
+@app.route("/profile/steam/callback", methods=["POST"])
+@jwt_required()
+def steam_auth_callback():
+    if "openid.identity" not in request.args:
+        return jsonify({"error": "Steam login failed"}), 400
+    
+    steam_id = request.args.get("openid.identity").split("/")[-1]
+    
+    # Check if user is signed in
+    username = get_jwt_identity()
+    if not username:
+        return jsonify({"error":"User not logged in"}), 401
+    user = User.query.filter_by(username=username).first()
+    if not user:
+        return jsonify({"error":"User does not exist"}), 500
+    if User.query.filter_by(steam_id=steam_id).first():
+        return jsonify({"error": "This steam account is already linked to another account"}), 409
+    user.steam_id = steam_id
+    db.session.commit()
+    return jsonify({"message": "Steam account linked successfully"}), 200
+    
 
 # TO-DO: Add games to users
-@app.route("/add_games", methods=["POST"])
+@app.route("/profile/add_games", methods=["POST"])
 @jwt_required()
 def add_games():
     try:
