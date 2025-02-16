@@ -3,3 +3,10 @@ elasticsearch==8.17.1
 requests==2.32.3
 igdb-api-v4==0.3.3
 flask==3.1.0
+flask-sqlalchemy==3.1.1
+flask-migrate==4.1.0
+flask-jwt-extended==4.7.1
+flask-cors==5.0.0
+flask-bcrypt==1.0.1
+psycopg2==2.9.10
+redis==5.2.1
