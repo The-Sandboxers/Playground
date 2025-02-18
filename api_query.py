@@ -55,7 +55,7 @@ limit = 500
 # initial api request
 byte_array = wrapper.api_request(
         'games',
-        f'fields name; where rating_count>50 & category=0 & rating>5 & platforms=({platforms}); limit {limit}; offset 0;')
+        f'fields *; where rating_count>50 & category=0 & rating>5 & platforms=({platforms}); limit {limit}; offset 0;')
 i=1
 # decode to string and remove extra bracket added by api
 result = byte_array.decode()
@@ -66,7 +66,7 @@ empty_result = False
 while not empty_result:
     temp_result = wrapper.api_request(
             'games',
-            f'fields name; where rating_count>50 & category=0 & rating>5 & platforms=({platforms});  limit {limit}; offset {offset*i};')
+            f'fields *; where rating_count>50 & category=0 & rating>5 & platforms=({platforms});  limit {limit}; offset {offset*i};')
     if temp_result==EMPTY_API_RESULT:
         empty_result = True
     else:
