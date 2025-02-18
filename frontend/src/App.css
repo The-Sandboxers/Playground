@@ -15,6 +15,10 @@ html, body {
   text-align: center;
 }
 
+.page-title-container {
+  margin: 0;
+}
+
 /* Title styling */
 .game-title {
   font-size: 3rem;
