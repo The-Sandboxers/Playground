@@ -1,8 +1,11 @@
 import requests
 
 class IGDBRequest:
-    def __init__(self, endpoint, fields):
+    def __init__(self, clientId, access_token):
         self.api = "https://api.igdb.com/v4/"
+        self.headers = []
+        self.clientId = clientId
+        self.access_token = access_token
         self.validEndpoints = {
             "age_ratings",
             "age_rating_content_descriptions",
@@ -61,13 +64,19 @@ class IGDBRequest:
             "themes",
             "websites",
         }
-        self.link = self.api + endpoint
-        if endpoint not in self.validEndpoints:
-            raise ValueError("argument, 'endpoint' not a valid input.")
-        else:
-            self.endpoint = endpoint
+        # self.link = self.api + endpoint
+        # if endpoint not in self.validEndpoints:
+        #     raise ValueError("argument, 'endpoint' not a valid input.")
+        # else:
+        #     self.endpoint = endpoint
         self.fields = []
         
     def changeEndpoint(self, newEndpoint):
-        
         self.link = self.api + newEndpoint
+    
+    def changeFields(self, newFields):
+        self.fields = newFields
+        
+    def __request(self, endpoint, fields):
+        response = requests.post(self.api + endpoint, **{'headers': {'Client-ID':self.clientId, 'Authorization': f'Bearer {self.access_token}'}, 'data': f'{self.fields}'})
+        return response.json()

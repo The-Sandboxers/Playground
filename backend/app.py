@@ -198,6 +198,10 @@ def add_games():
     except:
         return jsonify(error="Error adding games"), 500
 
+@app.route("/hard_coded_game", methods=["GET"])
+def hard_coded():
+    return jsonify({"title":"The Legend of Zelda: Breath of the Wild",
+                    "url_cover": "https://images.igdb.com/igdb/image/upload/t_cover_big/co3p2d.webp"})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
