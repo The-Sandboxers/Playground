@@ -41,6 +41,15 @@ STEAM_API_KEY = app.config["STEAM_API_KEY"]
 def hello_world():
     return 'Hello, Mom!'
 
+@app.route('/test', methods=["GET"])
+def test_request():
+    pic_link = "https://cdn.pixabay.com/photo/2017/05/29/15/34/kitten-2354016_1280.jpg"
+    username = "Request worked"
+
+    return jsonify({
+        "username": username,
+        "profile_pic": pic_link
+    }), 200
 
 
 

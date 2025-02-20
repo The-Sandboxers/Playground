@@ -1,14 +1,30 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import './Profile.css';
 
 export default function Profile()
 {
+    const [username, setUsername] = useState('Guest');
+    const [profilePic, setProfilePic] = useState("https://tr.rbxcdn.com/38c6edcb50633730ff4cf39ac8859840/420/420/Hat/Png");
+
+    async function refreshProfile()
+    {
+        try {
+            const response = await axios.get('http://127.0.0.1:5000/test');
+            setUsername(response.data.username);
+            setProfilePic(response.data.profile_pic);
+        } catch (error) {
+
+        }
+        
+    }
+
     return (
         <div className="profile-container">
             <div className="horizontal-layout">
                 <div className="pic-and-linked-accounts">
-                    <h3>Profile Name</h3>
-                    <img src="https://tr.rbxcdn.com/38c6edcb50633730ff4cf39ac8859840/420/420/Hat/Png" className="profile-pic"></img>
+                    <h3>{username}</h3>
+                    <img src={profilePic} className="profile-pic"></img>
                     <h3>Linked Services:</h3>
                 </div>
                 <div className="vertical-layout">
@@ -18,6 +34,7 @@ export default function Profile()
                     <div className="liked-games">
                         <h3>Liked Games</h3>
                     </div>
+                    <button onClick={refreshProfile}></button>
                 </div>
             </div>
         </div>
