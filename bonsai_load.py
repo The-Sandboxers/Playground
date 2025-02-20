@@ -24,7 +24,7 @@ def create_index(es):
             "mappings":{
                 "properties":{
                     "name":{"type":"text"},
-                    "id ": {"type":"keyword"},
+                    "igdb_id": {"type":"keyword"},
                     "age_ratings": {"type":"keyword"},
                     "aggregated_rating": {"type":"double"},
                     "aggregated_rating_count": {"type":"integer"},
