@@ -41,6 +41,15 @@ STEAM_API_KEY = app.config["STEAM_API_KEY"]
 def hello_world():
     return 'Hello, Mom!'
 
+@app.route('/test', methods=["GET"])
+def test_request():
+    pic_link = "https://cdn.pixabay.com/photo/2017/05/29/15/34/kitten-2354016_1280.jpg"
+    username = "Request worked"
+
+    return jsonify({
+        "username": username,
+        "profile_pic": pic_link
+    }), 200
 
 
 
@@ -177,12 +186,7 @@ def steam_auth_callback():
     user.steam_id = steam_id
     db.session.commit()
     return jsonify({"message": "Steam account linked successfully"}), 200
-
-
-@app.route("/hard_coded_game", methods=["GET"])
-def hard_coded():
-    return jsonify({"title":"The Legend of Zelda: Breath of the Wild",
-                    "url_cover": "https://images.igdb.com/igdb/image/upload/t_cover_big/co3p2d.webp"})
+    
 
 # TO-DO: Add games to users
 @app.route("/profile/add_games", methods=["POST"])
@@ -203,6 +207,10 @@ def add_games():
     except:
         return jsonify(error="Error adding games"), 500
 
+@app.route("/hard_coded_game", methods=["GET"])
+def hard_coded():
+    return jsonify({"title":"The Legend of Zelda: Breath of the Wild",
+                    "url_cover": "https://images.igdb.com/igdb/image/upload/t_cover_big/co3p2d.webp"})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

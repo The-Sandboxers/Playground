@@ -11,7 +11,7 @@ class ApplicationConfig:
     JWT_TOKEN_LOCATION = ["headers"]
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=1)
     JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=1)
-    SQLALCHEMY_DATABASE_URI = "postgresql://postgres:maxsy111@localhost:5432/playground"
+    SQLALCHEMY_DATABASE_URI = "postgresql://postgres:postgres@postgres:5432/playground"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ECHO = True
     STEAM_API_KEY = os.getenv('STEAM_WEB_API_KEY')
