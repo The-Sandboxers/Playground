@@ -1,12 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios'
 // Import Font Awesome icons from react-icons
 import { FaAngleLeft, FaAngleRight, FaRegThumbsUp, FaRegThumbsDown } from 'react-icons/fa6';
 import './Recomendations.css';
 
 export default function Recomendations() {
-
-  // Clicked Icons state handling
   const [clickedIcons, setClickedIcons] = useState({
     leftArrow: false,
     rightArrow: false,
@@ -20,7 +17,7 @@ export default function Recomendations() {
       [icon]: true,
     }));
   }
-  
+
   useEffect(() => {
     const { leftArrow, rightArrow, thumbUp, thumbDown } = clickedIcons;
     if (leftArrow || rightArrow || thumbUp || thumbDown) {
@@ -36,22 +33,6 @@ export default function Recomendations() {
     }
   }, [clickedIcons]);
 
-  const [currGameData, setCurrGameData] = useState({
-    title: "Rocket League",
-    url_cover: "https://cdn1.epicgames.com/offer/9773aa1aa54f4f7b80e44bef04986cea/EGS_RocketLeague_PsyonixLLC_S2_1200x1600-b61e9e7ec5d3294dfa514f23fc7f0684"
-  });
-
-  useEffect(() => {
-    // Gets game data
-    axios.get(
-            'http://127.0.0.1:5000/hard_coded_game'
-          )
-          .then((response) => {
-            setCurrGameData(response.data)
-          })
-          .catch((err) => {console.log("Unhandled error" + err)})
-  }, [clickedIcons]); // This dependency needs to change... later
-
   return (
     <div className="app-container">
       <header className="page-title-container">
@@ -60,7 +41,7 @@ export default function Recomendations() {
       </header>
 
       <main className="main-content">
-        <h1 className="game-title">{currGameData.title}</h1>
+        <h1 className="game-title">Rocket League</h1>
         <div className="game-info">
           <div className="visuals-container">
             <div className="arrows-container">
@@ -71,7 +52,7 @@ export default function Recomendations() {
 
               <div className="image-container">
                 <img
-                  src={currGameData.url_cover}
+                  src="https://cdn1.epicgames.com/offer/9773aa1aa54f4f7b80e44bef04986cea/EGS_RocketLeague_PsyonixLLC_S2_1200x1600-b61e9e7ec5d3294dfa514f23fc7f0684"
                   alt="Game Cover"
                   className="game-cover"
                 />

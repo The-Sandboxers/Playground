@@ -186,12 +186,7 @@ def steam_auth_callback():
     user.steam_id = steam_id
     db.session.commit()
     return jsonify({"message": "Steam account linked successfully"}), 200
-
-
-@app.route("/hard_coded_game", methods=["GET"])
-def hard_coded():
-    return jsonify({"title":"The Legend of Zelda: Breath of the Wild",
-                    "url_cover": "https://images.igdb.com/igdb/image/upload/t_cover_big/co3p2d.webp"})
+    
 
 # TO-DO: Add games to users
 @app.route("/profile/add_games", methods=["POST"])
