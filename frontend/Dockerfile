@@ -8,7 +8,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies (npm install)
-RUN npm install react-icons
+RUN npm install react-icons axios
 
 # Copy the rest of the frontend files
 COPY . .

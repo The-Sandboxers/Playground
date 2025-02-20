@@ -51,8 +51,6 @@ def test_request():
         "profile_pic": pic_link
     }), 200
 
-
-
 @app.route("/register", methods=["POST"])
 @jwt_required(optional=True)
 def register_user():
