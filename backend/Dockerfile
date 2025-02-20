@@ -16,5 +16,5 @@ COPY . .
 # Expose port that Flask is on
 EXPOSE 5000
 
-# Run Flask app
-CMD ["python","app.py"]
+# Insert Migrations and run Flask app
+CMD ["sh", "-c", "flask db upgrade && python app.py"]
