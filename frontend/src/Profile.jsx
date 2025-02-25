@@ -15,7 +15,7 @@ export default function Profile()
         try {
             const response = await axios.get('http://127.0.0.1:5000/profile');
             setUsername(response.data.username);
-            setProfilePic(response.data.profile_pic);
+            //setProfilePic(response.data.profile_pic);
         } catch (error) {
             
         }
