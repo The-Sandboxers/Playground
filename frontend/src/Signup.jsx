@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import './Login.css';
 
 export default function Signup()
@@ -20,7 +21,6 @@ export default function Signup()
                 username: username,
                 password: password,
             };
-            console.log(userData);
 
             try {
                 // Send POST request to the backend
@@ -32,7 +32,7 @@ export default function Signup()
                     console.log("Registration successful:", response.data);
                 }
             } catch (error) {
-                setError("Registration failed. Please try again. " + JSON.stringify(userData) + JSON.stringify(response.data));
+                setError("Registration failed. Please try again.");
                 setSuccess(false);  // Hide success message on failure
                 console.error("Error registering:", error.response ? error.response.data : error.message);
             }
@@ -47,7 +47,7 @@ export default function Signup()
         <div className="login-container">
             <form onSubmit={handleSubmit}>
                 {error && <p style={{ color: "yellow" }}>{error}</p>}
-                {success && <p style={{ color: "green" }}>Registration successful!</p>}
+                {success && <p style={{ color: "lightgreen" }}>Login successful!</p>}
                 <label for="email">Email</label>
                 <input id="email" type="text" value={email} onChange={(e) => setEmail(e.target.value)} required></input>
                 <label for="Username">Username</label>
