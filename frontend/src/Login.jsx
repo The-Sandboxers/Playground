@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './Login.css';
+import { requestBackend } from './utils';
 
 export default function Login()
 {
@@ -19,14 +20,18 @@ export default function Login()
 
         try {
             // Send POST request to the backend
-            const response = await axios.post('http://127.0.0.1:5000/login', userData);
+            const data = await requestBackend("POST", "http://127.0.0.1:5000/login", "None", userData)
             
-            if (response.status === 200) {
-                setSuccess(true);  // Show success message
-                setError("");      // Clear any previous error messages
-                console.log("Login successful:", response.data);
-                // navigate to login page eventually
-            }
+            setSuccess(true);  // Show success message
+            setError("");      // Clear any previous error messages
+            console.log("Login successful:", data);
+            const access_token = data.access_token
+            const refresh_token = data.refresh_token
+            localStorage.setItem("access_token", access_token)
+            localStorage.setItem("refresh_token", refresh_token)
+                
+            // navigate to login page eventually
+            
         } catch (error) {
             setError("Login failed. Please try again.");
             setSuccess(false);  // Hide success message on failure
@@ -38,14 +43,14 @@ export default function Login()
         <div className="login-container">
             <form onSubmit={handleSubmit}>
                 {error && <p style={{ color: "yellow" }}>{error}</p>}
-                {success && <p style={{ color: "lightgreen" }}>Registration successful!</p>}
+                {success && <p style={{ color: "lightgreen" }}>Login successful!</p>}
                 <label for="Username">Username</label>
                 <input id="username" type="text" value={username} onChange={(e) => setUsername(e.target.value)} required></input>
                 <br/>
                 <label for="password">Password</label>
                 <input type="password" id="password" value={password} onChange={(e) => setPassword(e.target.value)} required></input>
                 <div className="button-container">
-                    <button type="submit" className="login-button">Submit</button>
+                    <button type="submit" className="login-button">Login</button>
                     <br/><br/>
                     <h3>New to Playground?</h3>
                     <button className="login-button">Sign Up Now</button>
