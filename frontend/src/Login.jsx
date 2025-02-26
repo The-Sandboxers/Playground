@@ -36,6 +36,11 @@ export default function Login()
         }
     }
 
+    function goToSignUp()
+    {
+        navigate("/signup");
+    }
+
     return (
         <div className="login-container">
             <form onSubmit={handleSubmit}>
@@ -48,12 +53,11 @@ export default function Login()
                 <input type="password" id="password" value={password} onChange={(e) => setPassword(e.target.value)} required></input>
                 <div className="button-container">
                     <button type="submit" className="login-button">Submit</button>
+                    <br/><br/>
+                    <h3>New to Playground?</h3>
+                    <button className="login-button" onClick={goToSignUp}>Sign Up Now</button>
                 </div>
             </form>
-            <div className="button-container">
-                <h3>New to Playground?</h3>
-                <button className="login-button" onClick={navigate("/signup")}>Sign Up Now</button>
-            </div>
         </div>
       );
 }

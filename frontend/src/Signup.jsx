@@ -45,6 +45,11 @@ export default function Signup()
         }
     }
 
+    function goToLogin()
+    {
+        navigate("/login");
+    }
+
     return (
         <div className="login-container">
             <form onSubmit={handleSubmit}>
@@ -64,7 +69,7 @@ export default function Signup()
                     <button className="login-button" type="submit">Submit</button>
                     <br/><br/>
                     <h3>Already have an account?</h3>
-                    <button className="login-button" onClick={navigate("/login")}>Log In Now</button>
+                    <button className="login-button" onClick={goToLogin}>Log In Now</button>
                 </div>
             </form>
         </div>
