@@ -135,7 +135,7 @@ def format_data(games):
 
 
 
-es = Elasticsearch('http://localhost:9200', basic_auth=("elastic", ELASTIC_PASSWORD))
+es = Elasticsearch('http://playground-elasticsearch-1:9200', basic_auth=("elastic", ELASTIC_PASSWORD))
 
 # grab json from file
 games=[]
