@@ -7,6 +7,7 @@ from config import ApplicationConfig
 from urllib.parse import urlencode
 from elasticsearch import Elasticsearch
 from dotenv import load_dotenv
+from helpers import get_owned_steam_game_ids
 import os
 import logging
 import redis
@@ -60,8 +61,6 @@ def test_request():
         "username": username,
         "profile_pic": pic_link
     }), 200
-
-
 
 @app.route("/register", methods=["POST"])
 @jwt_required(optional=True)
@@ -130,7 +129,6 @@ def user_profile():
             liked_games_ids.append(game.igdb_id)
         
     return jsonify({"username": user.username,
-                    "steam_id": user.steam_id,
                     "all_games": all_games_ids,
                     "liked_games": liked_games_ids
         }), 200
@@ -198,7 +196,7 @@ def steam_auth_callback():
     return jsonify({"message": "Steam account linked successfully"}), 200
     
 
-# TO-DO: Add games to users
+# Route to add games to a user's profile manually
 @app.route("/profile/add_games", methods=["POST"])
 @jwt_required()
 def add_games():
@@ -280,6 +278,20 @@ def random_game():
             return jsonify(doc["_source"])
     except:
         return jsonify(error="Error getting random game"), 500
+
+
+# TO-DO: Finish Implemnting load steam games 
+@app.route("/profile/load_games_steam", methods=["POST"])
+@jwt_required()
+def load_games_from_steam():
+    try:
+        username = get_jwt_identity()
+        user = User.query.filter_by(username=username).first()
+        user_steamid = user.steam_id
+        owned_steam_ids = get_owned_steam_game_ids(user_steamid, STEAM_API_KEY)
+        # Finish adding games by checking owned_steam_ids against elasticsearch
+    except:
+        return jsonify(error="Error getting games from steam"), 500
 
 
 if __name__ == '__main__':

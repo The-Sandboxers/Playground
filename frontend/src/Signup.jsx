@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './Login.css';
 
@@ -10,6 +11,7 @@ export default function Signup()
     const [confirmPassword, setConfirmPassword] = useState("");
     const [error, setError] = useState("");
     const [success, setSuccess] = useState(false);
+    const navigate = useNavigate();
 
     async function handleSubmit(e)
     {
@@ -43,6 +45,11 @@ export default function Signup()
         }
     }
 
+    function goToLogin()
+    {
+        navigate("/login");
+    }
+
     return (
         <div className="login-container">
             <form onSubmit={handleSubmit}>
@@ -62,7 +69,7 @@ export default function Signup()
                     <button className="login-button" type="submit">Submit</button>
                     <br/><br/>
                     <h3>Already have an account?</h3>
-                    <button className="login-button">Log In Now</button>
+                    <button className="login-button" onClick={goToLogin}>Log In Now</button>
                 </div>
             </form>
         </div>

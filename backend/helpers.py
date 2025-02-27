@@ -1,9 +1,11 @@
+
 from igdb.wrapper import IGDBWrapper
 from dotenv import load_dotenv
 from igdb.wrapper import IGDBWrapper
 import os
 import requests
 import json
+from requests import get
 
 load_dotenv()
 
@@ -30,4 +32,22 @@ def get_igdb_ids(steam_ids):
     for id in steam_ids:
         igdb_ids.append(json.loads(wrapper.api_request('external_games',f'fields id; where uid=({str(id)}) & external_game_source=({STEAM_SERVICE_ID});').decode())[0]["id"])
     return igdb_ids
+  
+# returns a list of game_ids given a steam_id and steam web api key
+def get_owned_steam_game_ids(steam_id, STEAM_API_KEY):
+    # Call to Steam Web API endpoint
+    url = f"https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/"
+    params = {
+        "key": STEAM_API_KEY,
+        "steamid": steam_id,
+        "include_appinfo": 1,
+        "include_played_free_games": 1,
+        "format": "json"
+    }
+    
+    response = get(url, params=params)
+    data = response.json().get("response", {})
+    
+    return [game["appid"] for game in data.get("games", [])]
+
 
