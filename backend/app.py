@@ -9,7 +9,6 @@ from elasticsearch import Elasticsearch
 from dotenv import load_dotenv
 import os
 import logging
-
 import redis
 # import users table
 from models import db, User, UserGame
@@ -263,7 +262,25 @@ def search_games():
         # conversion ensures unique items but compatibility with jsonify()
         return jsonify(result=list(set(result_games)))
     except:
-        return jsonify(error="Error getting game info"), 500
+        return jsonify(error="Error getting search results"), 500
+
+@app.route("/games/random_game", methods=["GET"])
+def random_game():
+    index="games"
+    fields=["name"]
+    try:
+        query= {
+            "function_score": {
+                "query": { "match_all": {} },
+                "random_score": {}, 
+            }
+        }
+        result = es.search(index=index, query=query, size=1)
+        for doc in result["hits"]["hits"]:
+            return jsonify(doc["_source"])
+    except:
+        return jsonify(error="Error getting random game"), 500
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
