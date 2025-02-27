@@ -4,7 +4,7 @@ from steam_web_api import Steam
 
 load_dotenv()
 
-KEY = os.getenv("STEAM_API_KEY")
+KEY = os.getenv("STEAM_WEB_API_KEY")
 steam = Steam(KEY)
 
 # Luke's steamid hard coded
