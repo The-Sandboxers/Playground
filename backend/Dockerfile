@@ -17,4 +17,4 @@ COPY . .
 EXPOSE 5000
 
 # Insert Migrations and run Flask app
-CMD ["sh", "-c", "flask db upgrade && python app.py"]
+CMD ["sh", "-c", "flask db upgrade && python bonsai_load.py && python app.py"]

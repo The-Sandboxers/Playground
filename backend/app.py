@@ -5,6 +5,10 @@ from flask_migrate import Migrate
 from flask_cors import CORS
 from config import ApplicationConfig
 from urllib.parse import urlencode
+from elasticsearch import Elasticsearch
+from dotenv import load_dotenv
+import os
+import logging
 
 import redis
 # import users table
@@ -13,6 +17,8 @@ from models import db, User, UserGame
 
 app = Flask(__name__)
 app.config.from_object(ApplicationConfig)
+
+logging.basicConfig(level=logging.INFO)
 # Create database for app
 
 db.init_app(app)
@@ -36,6 +42,11 @@ BLACKLISTED_TOKENS_KEY = "blacklisted_tokens"
 STEAM_OPENID_URL = "https://steamcommunity.com/openid/login"
 
 STEAM_API_KEY = app.config["STEAM_API_KEY"]
+
+# initialize elasticsearch instance
+load_dotenv()
+ELASTIC_PASSWORD = os.getenv('ELASTIC_PASSWORD')
+es = Elasticsearch('http://playground-elasticsearch-1:9200', basic_auth=("elastic", ELASTIC_PASSWORD))
 
 @app.route('/')
 def hello_world():
@@ -205,10 +216,33 @@ def add_games():
     except:
         return jsonify(error="Error adding games"), 500
 
-@app.route("/hard_coded_game", methods=["GET"])
-def hard_coded():
-    return jsonify({"title":"The Legend of Zelda: Breath of the Wild",
-                    "url_cover": "https://images.igdb.com/igdb/image/upload/t_cover_big/co3p2d.webp"})
+# route to check the health of the elasticsearch cluster
+@app.route("/elasticsearch/health", methods=["GET"])
+def es_health():
+    result = es.cluster.health(
+    wait_for_status="yellow",
+    timeout="50s")
+    return jsonify(result.body)
+
+
+# route to return information for a hard-coded example game
+@app.route("/gameinfo/example_game", methods=["GET"])
+#@jwt_required()
+def example_game():
+    game_id = 11198
+    index="games"
+    try:
+        query={
+            "match":{
+                "igdb_id": game_id
+            }
+        }
+        fields=["name"]
+        result = es.search(index=index, query=query, fields=fields)
+        return jsonify(result=result.body)
+    except:
+        return jsonify(error="Error getting game info"), 500
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
