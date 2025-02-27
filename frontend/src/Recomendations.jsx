@@ -36,30 +36,31 @@ export default function Recomendations() {
   }, [clickedIcons]);
 
   const [currGameData, setCurrGameData] = useState({
-    title: "Rocket League",
+    name: "NOT Rocket League",
     url_cover: "https://cdn1.epicgames.com/offer/9773aa1aa54f4f7b80e44bef04986cea/EGS_RocketLeague_PsyonixLLC_S2_1200x1600-b61e9e7ec5d3294dfa514f23fc7f0684"
   });
 
   useEffect(() => {
     // Gets game data
     axios.get(
-            'http://127.0.0.1:5000/hard_coded_game'
+            'http://127.0.0.1:5000/gameinfo/example_game'
           )
           .then((response) => {
-            setCurrGameData(response.data)
+            setCurrGameData(response.data.result.hits.hits[0]._source);
+            console.log(currGameData);
           })
           .catch((err) => {console.log("Unhandled error" + err)})
   }, [clickedIcons]); // This dependency needs to change... later
 
   return (
     <div className="app-container">
-      <header className="page-title-container">
+      <header className="header-container">
         <h1>Playground!</h1>
         <h2 id="rec-games">Recommended Games</h2>
       </header>
 
       <main className="main-content">
-        <h1 className="game-title">{currGameData.title}</h1>
+        <h1 className="game-title"><a href={currGameData.url}>{currGameData.name}</a></h1>
         <div className="game-info">
           <div className="visuals-container">
             <div className="arrows-container">
@@ -70,8 +71,8 @@ export default function Recomendations() {
 
               <div className="image-container">
                 <img
-                  src={currGameData.url_cover}
-                  alt="Game Cover"
+                  src="https://cdn1.epicgames.com/offer/9773aa1aa54f4f7b80e44bef04986cea/EGS_RocketLeague_PsyonixLLC_S2_1200x1600-b61e9e7ec5d3294dfa514f23fc7f0684"
+                  alt={currGameData.cover}
                   className="game-cover"
                 />
               </div>
@@ -94,13 +95,12 @@ export default function Recomendations() {
               />
             </div>
           </div>
-          <div class="text-container">
-            <div class="summary-container">
-              <p>Rocket League is a video game the combines arcade-style soccer and driving games. You play by controlling rocket-powered vehicles, which you can use to score goals with a giant soccer ball. Gameplay is energetic and chaotic as the cars can flip and fly in all directions.<br /><br />
-
-Rocket League supports single player, multiplayer and cross-platform play. Online players are teamed up by the game’s matchmaking system. You can play casually or take part in the online Competitive Seasons to climb the ranks and earn rewards.<br /><br />
-
-Players can communicate by voice or text on the same platform, or by pre-set messages called Quick Chats, which are visible to everyone. Rocket League players may also use third-party voice chat apps like Discord.</p>
+          <div className="text-container">
+            <span className="rating-container">
+              <h3>Rating: {(currGameData.aggregated_rating / 10).toFixed(2)}/10</h3>
+            </span>
+            <div className="summary-container">
+              <p>{currGameData.summary}</p>
             </div>
           </div>
         </div>
