@@ -22,10 +22,12 @@ access_token = fetch_access_token_Twitch(TWITCH_SECRET_KEY, TWITCH_CLIENT_ID)
 # create IGDB wrapper instance
 wrapper = IGDBWrapper(TWITCH_CLIENT_ID, access_token)
 
-# returns IGDB ID for a game given its Steam ID
-def get_igdb_id(steam_id):
+# returns IGDB IDs for games given a list of steam IDs
+def get_igdb_ids(steam_ids):
     # id for steam itself as a service in IGDB
     STEAM_SERVICE_ID = "1"
-    return json.loads(wrapper.api_request('external_games',f'fields id; where uid=({str(steam_id)}) & external_game_source=({STEAM_SERVICE_ID});').decode())[0]["id"]
-
+    igdb_ids = []
+    for id in steam_ids:
+        igdb_ids.append(json.loads(wrapper.api_request('external_games',f'fields id; where uid=({str(id)}) & external_game_source=({STEAM_SERVICE_ID});').decode())[0]["id"])
+    return igdb_ids
 
