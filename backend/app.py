@@ -228,7 +228,7 @@ def es_health():
 
 
 # route to return information for a hard-coded example game
-@app.route("/gameinfo/example_game", methods=["GET"])
+@app.route("/games/example_game", methods=["GET"])
 #@jwt_required()
 def example_game():
     game_id = 11198
@@ -245,6 +245,25 @@ def example_game():
     except:
         return jsonify(error="Error getting game info"), 500
 
+@app.route("/games/search", methods=["GET"])
+def search_games():
+    search_term = request.args.get("search_term")
+    index="games"
+    fields=["name"]
+    try:
+        query={
+            "match":{
+                "name": search_term
+            }
+        }
+        result = es.search(index=index, query=query, fields=fields)
+        result_games = []
+        for doc in result["hits"]["hits"]:
+            result_games.append(doc["_source"]["name"])
+        # conversion ensures unique items but compatibility with jsonify()
+        return jsonify(result=list(set(result_games)))
+    except:
+        return jsonify(error="Error getting game info"), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
