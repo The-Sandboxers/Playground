@@ -10,7 +10,6 @@ from dotenv import load_dotenv
 from helpers import get_owned_steam_game_ids
 import os
 import logging
-
 import redis
 # import users table
 from models import db, User, UserGame
@@ -226,7 +225,7 @@ def es_health():
 
 
 # route to return information for a hard-coded example game
-@app.route("/gameinfo/example_game", methods=["GET"])
+@app.route("/games/example_game", methods=["GET"])
 #@jwt_required()
 def example_game():
     game_id = 11198
@@ -242,6 +241,43 @@ def example_game():
         return jsonify(result=result.body)
     except:
         return jsonify(error="Error getting game info"), 500
+
+@app.route("/games/search", methods=["GET"])
+def search_games():
+    search_term = request.args.get("search_term")
+    index="games"
+    fields=["name"]
+    try:
+        query={
+            "match":{
+                "name": search_term
+            }
+        }
+        result = es.search(index=index, query=query, fields=fields)
+        result_games = []
+        for doc in result["hits"]["hits"]:
+            result_games.append(doc["_source"]["name"])
+        # conversion ensures unique items but compatibility with jsonify()
+        return jsonify(result=list(set(result_games)))
+    except:
+        return jsonify(error="Error getting search results"), 500
+
+@app.route("/games/random_game", methods=["GET"])
+def random_game():
+    index="games"
+    fields=["name"]
+    try:
+        query= {
+            "function_score": {
+                "query": { "match_all": {} },
+                "random_score": {}, 
+            }
+        }
+        result = es.search(index=index, query=query, size=1)
+        for doc in result["hits"]["hits"]:
+            return jsonify(doc["_source"])
+    except:
+        return jsonify(error="Error getting random game"), 500
 
 
 # TO-DO: Finish Implemnting load steam games 
