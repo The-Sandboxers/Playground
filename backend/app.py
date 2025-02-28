@@ -7,9 +7,9 @@ from config import ApplicationConfig
 from urllib.parse import urlencode
 from elasticsearch import Elasticsearch
 from dotenv import load_dotenv
+from helpers import get_owned_steam_game_ids
 import os
 import logging
-
 import redis
 # import users table
 from models import db, User, UserGame
@@ -129,7 +129,6 @@ def user_profile():
             liked_games_ids.append(game.igdb_id)
         
     return jsonify({"username": user.username,
-                    "steam_id": user.steam_id,
                     "all_games": all_games_ids,
                     "liked_games": liked_games_ids
         }), 200
@@ -197,7 +196,7 @@ def steam_auth_callback():
     return jsonify({"message": "Steam account linked successfully"}), 200
     
 
-# TO-DO: Add games to users
+# Route to add games to a user's profile manually
 @app.route("/profile/add_games", methods=["POST"])
 @jwt_required()
 def add_games():
@@ -226,7 +225,7 @@ def es_health():
 
 
 # route to return information for a hard-coded example game
-@app.route("/gameinfo/example_game", methods=["GET"])
+@app.route("/games/example_game", methods=["GET"])
 #@jwt_required()
 def example_game():
     game_id = 11198
@@ -242,6 +241,57 @@ def example_game():
         return jsonify(result=result.body)
     except:
         return jsonify(error="Error getting game info"), 500
+
+@app.route("/games/search", methods=["GET"])
+def search_games():
+    search_term = request.args.get("search_term")
+    index="games"
+    fields=["name"]
+    try:
+        query={
+            "match":{
+                "name": search_term
+            }
+        }
+        result = es.search(index=index, query=query, fields=fields)
+        result_games = []
+        for doc in result["hits"]["hits"]:
+            result_games.append(doc["_source"]["name"])
+        # conversion ensures unique items but compatibility with jsonify()
+        return jsonify(result=list(set(result_games)))
+    except:
+        return jsonify(error="Error getting search results"), 500
+
+@app.route("/games/random_game", methods=["GET"])
+def random_game():
+    index="games"
+    fields=["name"]
+    try:
+        query= {
+            "function_score": {
+                "query": { "match_all": {} },
+                "random_score": {}, 
+            }
+        }
+        result = es.search(index=index, query=query, size=1)
+        for doc in result["hits"]["hits"]:
+            return jsonify(doc["_source"])
+    except:
+        return jsonify(error="Error getting random game"), 500
+
+
+# TO-DO: Finish Implemnting load steam games 
+@app.route("/profile/load_games_steam", methods=["POST"])
+@jwt_required()
+def load_games_from_steam():
+    try:
+        username = get_jwt_identity()
+        user = User.query.filter_by(username=username).first()
+        user_steamid = user.steam_id
+        owned_steam_ids = get_owned_steam_game_ids(user_steamid, STEAM_API_KEY)
+        # Finish adding games by checking owned_steam_ids against elasticsearch
+    except:
+        return jsonify(error="Error getting games from steam"), 500
 
 
 if __name__ == '__main__':
