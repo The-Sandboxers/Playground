@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './Profile.css';
+import { requestBackend } from './utils';
 
 export default function Profile()
 {
@@ -10,17 +11,21 @@ export default function Profile()
     const [playedGames, setPlayedGames] = useState("");
 
 
-    async function refreshProfile()
-    {
+    useEffect(async () => {
+
         try {
-            const response = await axios.get('http://127.0.0.1:5000/profile');
-            setUsername(response.data.username);
-            //setProfilePic(response.data.profile_pic);
+            const data = await requestBackend("GET", "http://127.0.0.1:5000/profile")
+
+            setUsername(data.username);
+            setLikedGames(data.liked_games_ids);
+            setPlayedGames(data.all_games_ids);
+            //setProfilePic(data.profile_pic);
+            //hello
         } catch (error) {
-            
+            console.log(error);
         }
-        
-    }
+            
+    })
 
     return (
         <div className="profile-container">
@@ -39,7 +44,6 @@ export default function Profile()
                         <h3>Liked Games</h3>
                         <p>{likedGames}</p>
                     </div>
-                    <button onClick={refreshProfile}></button>
                 </div>
             </div>
         </div>
