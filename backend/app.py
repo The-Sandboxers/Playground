@@ -226,7 +226,6 @@ def es_health():
 
 # route to return information for a hard-coded example game
 @app.route("/games/example_game", methods=["GET"])
-#@jwt_required()
 def example_game():
     game_id = 11198
     index="games"
