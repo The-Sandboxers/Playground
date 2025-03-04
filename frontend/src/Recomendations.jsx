@@ -4,6 +4,7 @@ import { FaAngleLeft, FaAngleRight, FaRegThumbsUp, FaRegThumbsDown } from 'react
 import './Recomendations.css';
 import axios from 'axios'
 import ProfileButton from './ProfileButton.jsx';
+import SearchBar from './SearchBar.jsx';
 
 export default function Recomendations() {
   // Clicked Icons state handling
@@ -60,7 +61,7 @@ export default function Recomendations() {
       const nextIndex = currentIndex + 1;
       if (nextIndex >= gameList.length) {
         const additionalItems = [await getRandomGame()];
-        console.log(additionalItems[0]);
+        // console.log(additionalItems[0]);
         setGameList(prevItems => [...prevItems, ...additionalItems]);
       }
       setCurrentIndex(nextIndex);
@@ -69,7 +70,7 @@ export default function Recomendations() {
       const prevIndex = currentIndex - 1;
       if (prevIndex < 0) {
         const additionalItems = [await getRandomGame()];
-        console.log(additionalItems[0]);
+        // console.log(additionalItems[0]);
         // Prepend new items and adjust current index so that the first newly added item is shown.
         setGameList(prevItems => [...additionalItems, ...prevItems]);
         setCurrentIndex(additionalItems.length - 1);
@@ -87,7 +88,8 @@ export default function Recomendations() {
       if (!firstGame) {
         // At first if you don't succeed, try try again
         if (numTries > MAX_TRIES) {
-          console.logg(err);
+          console.log("failed to load too many times");
+          console.log(err);
           return;
         }
         else {
@@ -95,7 +97,6 @@ export default function Recomendations() {
           getFirstGame(numTries + 1);
       }
       }
-      console.log(firstGame);
       setGameList([firstGame]);
       setCurrentIndex(0);
     }
@@ -111,8 +112,8 @@ export default function Recomendations() {
           <h2 id="rec-games">Recommended Games</h2>
         </div>
       </header>
-
       <main className="main-content">
+        <SearchBar />
         <h1 className="game-title"><a href={gameList[currentIndex] ? gameList[currentIndex].url : ''}>{gameList[currentIndex] ? gameList[currentIndex].name : 'Loading...'}</a></h1>
         <div className="game-info">
           <div className="visuals-container">
@@ -125,7 +126,7 @@ export default function Recomendations() {
               <div className="image-container">
                 <img
                   src="https://cdn1.epicgames.com/offer/9773aa1aa54f4f7b80e44bef04986cea/EGS_RocketLeague_PsyonixLLC_S2_1200x1600-b61e9e7ec5d3294dfa514f23fc7f0684"
-                  alt={currGameData.cover}
+                  alt={gameList[currentIndex] ? gameList[currentIndex].cover : null}
                   className="game-cover"
                 />
               </div>
@@ -151,6 +152,9 @@ export default function Recomendations() {
           <div className="text-container">
             <span className="rating-container">
               <h3>Rating: {gameList[currentIndex] ? (gameList[currentIndex].aggregated_rating / 10).toFixed(2) : 'Loading...'}/10</h3>
+            </span>
+            <span className="">
+
             </span>
             <div className="summary-container">
               <p>{gameList[currentIndex] ? gameList[currentIndex].summary : ''}</p>

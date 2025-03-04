@@ -3,6 +3,7 @@ html, body {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  background-color: #020202;
 }
 
 a {
@@ -15,10 +16,9 @@ a {
 .app-container {
   display: grid;
   grid-template-rows: auto 1fr auto;
-  height: 100vh;
+  height: 120vh;
   width: 100vw;
   justify-self: stretch;
-  background-color: #020202;
 }
 
 /* Header: Page title aligned to top-left */
@@ -70,6 +70,12 @@ a {
   width: 100vw
 }
 
+.main-content input {
+  width: 300px;
+  height: 30px;
+  border-color: red;
+  background-color: #EEE;
+}
 /* Footer: Can be styled as desired */
 .footer {
   text-align: center;
