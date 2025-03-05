@@ -252,7 +252,7 @@ def search_games():
                 "name": search_term
             }
         }
-        result = es.search(index=index, query=query, fields=fields)
+        result = es.search(index=index, query=query, fields=fields, size=5)
         result_games = []
         for doc in result["hits"]["hits"]:
             result_games.append(doc["_source"]["name"])
