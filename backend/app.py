@@ -241,6 +241,26 @@ def example_game():
     except:
         return jsonify(error="Error getting game info"), 500
 
+# route to return game information for a given igdb id
+@app.route("/games/game_info", methods=["GET"])
+def game_info():
+    game_id = request.args.get("igdb_id")
+    index="games"
+    try:
+        query={
+            "match":{
+                "igdb_id": game_id
+            }
+        }
+        fields=["name"]
+        result = es.search(index=index, query=query, fields=fields)
+        for doc in result["hits"]["hits"]:
+            return jsonify(doc["_source"])
+    except:
+        return jsonify(error="Error getting game info"), 500
+
+
+
 @app.route("/games/search", methods=["GET"])
 def search_games():
     search_term = request.args.get("search_term")
@@ -252,7 +272,7 @@ def search_games():
                 "name": search_term
             }
         }
-        result = es.search(index=index, query=query, fields=fields)
+        result = es.search(index=index, query=query, fields=fields, size=5)
         result_games = []
         for doc in result["hits"]["hits"]:
             result_games.append(doc["_source"]["name"])
