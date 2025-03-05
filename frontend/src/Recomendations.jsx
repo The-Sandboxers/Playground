@@ -83,7 +83,7 @@ export default function Recomendations() {
 
   useEffect(() => {
     async function getFirstGame(numTries) {
-      const MAX_TRIES = 40 // should get us about 20 seconds of attempting to reach the backend
+      const MAX_TRIES = 120 // should get us about 20 seconds of attempting to reach the backend
       const firstGame = await getRandomGame();
       if (!firstGame) {
         // At first if you don't succeed, try try again
