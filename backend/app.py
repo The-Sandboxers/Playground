@@ -7,7 +7,7 @@ from config import ApplicationConfig
 from urllib.parse import urlencode
 from elasticsearch import Elasticsearch
 from dotenv import load_dotenv
-from helpers import get_owned_steam_game_ids
+from helpers import get_owned_steam_game_ids, get_cover_url
 import os
 import logging
 import redis
@@ -255,6 +255,8 @@ def game_info():
         fields=["name"]
         result = es.search(index=index, query=query, fields=fields)
         for doc in result["hits"]["hits"]:
+            cover_url = get_cover_url(game_id)
+            doc["_source"]["cover_url"]=[cover_url]
             return jsonify(doc["_source"])
     except:
         return jsonify(error="Error getting game info"), 500
