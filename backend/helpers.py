@@ -32,6 +32,7 @@ def get_igdb_ids(steam_ids):
     for id in steam_ids:
         igdb_ids.append(json.loads(wrapper.api_request('external_games',f'fields id; where uid=({str(id)}) & external_game_source=({STEAM_SERVICE_ID});').decode())[0]["id"])
     return igdb_ids
+
   
 # returns a list of game_ids given a steam_id and steam web api key
 def get_owned_steam_game_ids(steam_id, STEAM_API_KEY):
@@ -49,5 +50,16 @@ def get_owned_steam_game_ids(steam_id, STEAM_API_KEY):
     data = response.json().get("response", {})
     
     return [game["appid"] for game in data.get("games", [])]
+
+# returns a cover url for a given igdb_id
+def get_cover_url(igdb_id):
+    result = json.loads(wrapper.api_request(
+        'games',
+        f'fields name, cover.url; where id=({igdb_id});').decode())
+    url_string = result[0]['cover']['url']
+    # change t_thumb to t_cover_big to get proper sized cover and add https: prefix
+    url_string="https:"+url_string.replace("t_thumb", "t_cover_big")
+    return url_string
+
 
 
