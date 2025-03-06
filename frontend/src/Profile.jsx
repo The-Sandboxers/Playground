@@ -11,21 +11,21 @@ export default function Profile()
     const [playedGames, setPlayedGames] = useState("");
 
 
-    useEffect(async () => {
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const data = await requestBackend("GET", "http://127.0.0.1:5000/profile")
 
-        try {
-            const data = await requestBackend("GET", "http://127.0.0.1:5000/profile")
-
-            setUsername(data.username);
-            setLikedGames(data.liked_games_ids);
-            setPlayedGames(data.all_games_ids);
-            //setProfilePic(data.profile_pic);
-            //hello
-        } catch (error) {
-            console.log(error);
+                setUsername(data.username);
+                setLikedGames(data.liked_games_ids);
+                setPlayedGames(data.all_games_ids);
+                //setProfilePic(data.profile_pic);
+                //hello
+            } catch (error) {
+                console.log(error);
+            }
         }
-            
-    })
+    });
 
     return (
         <div className="profile-container">
