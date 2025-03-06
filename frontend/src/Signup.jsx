@@ -32,6 +32,7 @@ export default function Signup()
                     setSuccess(true);  // Show success message
                     setError("");      // Clear any previous error messages
                     console.log("Registration successful:", response.data);
+                    navigate("/login")
                 }
             } catch (error) {
                 setError("Registration failed. Please try again.");
@@ -54,7 +55,7 @@ export default function Signup()
         <div className="login-container">
             <form onSubmit={handleSubmit}>
                 {error && <p style={{ color: "yellow" }}>{error}</p>}
-                {success && <p style={{ color: "lightgreen" }}>Login successful!</p>}
+                {success && <p style={{ color: "lightgreen" }}>Sign up successful!</p>}
                 <label for="email">Email</label>
                 <input id="email" type="text" value={email} onChange={(e) => setEmail(e.target.value)} required></input>
                 <label for="Username">Username</label>
