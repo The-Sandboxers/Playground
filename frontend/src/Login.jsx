@@ -32,7 +32,7 @@ export default function Login()
             localStorage.setItem("access_token", access_token)
             localStorage.setItem("refresh_token", refresh_token)
             
-            navigate("/profile");
+            //navigate("/profile");
         } catch (error) {
             setError("Login failed. Please try again.");
             setSuccess(false);  // Hide success message on failure
@@ -49,7 +49,7 @@ export default function Login()
         <div className="login-container">
             <form onSubmit={handleSubmit}>
                 {error && <p style={{ color: "yellow" }}>{error}</p>}
-                {success && <p style={{ color: "lightgreen" }}>Registration successful!</p>}
+                {success && <p style={{ color: "lightgreen" }}>Login successful!</p>}
                 <label for="Username">Username</label>
                 <input id="username" type="text" value={username} onChange={(e) => setUsername(e.target.value)} required></input>
                 <br/>
