@@ -151,7 +151,7 @@ export default function Recomendations() {
           </div>
           <div className="text-container">
             <span className="rating-container">
-              <h3>Rating: {gameList[currentIndex] ? (gameList[currentIndex].aggregated_rating / 10).toFixed(2) : 'Loading...'}/10</h3>
+              <h3>Rating: {gameList[currentIndex] ? (gameList[currentIndex].rating / 10).toFixed(2) : 'Loading...'}/10</h3>
             </span>
             <span className="">
 
