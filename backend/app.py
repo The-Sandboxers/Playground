@@ -296,6 +296,8 @@ def random_game():
         }
         result = es.search(index=index, query=query, size=1)
         for doc in result["hits"]["hits"]:
+            cover_url = get_cover_url(doc["_source"]["igdb_id"])
+            doc["_source"]["cover_url"]=[cover_url]
             return jsonify(doc["_source"])
     except:
         return jsonify(error="Error getting random game"), 500

@@ -83,7 +83,7 @@ export default function Recomendations() {
 
   useEffect(() => {
     async function getFirstGame(numTries) {
-      const MAX_TRIES = 40 // should get us about 20 seconds of attempting to reach the backend
+      const MAX_TRIES = 120 // should get us about 20 seconds of attempting to reach the backend
       const firstGame = await getRandomGame();
       if (!firstGame) {
         // At first if you don't succeed, try try again
@@ -125,7 +125,7 @@ export default function Recomendations() {
 
               <div className="image-container">
                 <img
-                  src="https://cdn1.epicgames.com/offer/9773aa1aa54f4f7b80e44bef04986cea/EGS_RocketLeague_PsyonixLLC_S2_1200x1600-b61e9e7ec5d3294dfa514f23fc7f0684"
+                  src={gameList[currentIndex] ? gameList[currentIndex].cover_url : null}
                   alt={gameList[currentIndex] ? gameList[currentIndex].cover : null}
                   className="game-cover"
                 />

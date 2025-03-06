@@ -70,11 +70,38 @@ a {
   width: 100vw
 }
 
-.main-content input {
+.search-container {
+  position: relative;
+}
+.search-container input {
   width: 300px;
   height: 30px;
   border-color: red;
   background-color: #EEE;
+  color: black;
+  font-family: sans-serif;
+}
+
+.search-results {
+  position: absolute;
+  top: 100%; /* Places it right below the input */
+  left: 0;
+  right: 0;
+  background-color: white;
+  border: 1px solid #ccc;
+  z-index: 10;
+  /* Optional: add some padding, max-height, overflow scroll, etc. */
+}
+
+.search-result-item {
+  padding: 2px;
+  cursor: pointer;
+  color: black;
+  opacity: 0.8;
+}
+
+.search-result-item:hover {
+  background-color: #f0f0f0;
 }
 /* Footer: Can be styled as desired */
 .footer {

@@ -31,16 +31,8 @@ export default function Login()
             const refresh_token = data.refresh_token
             localStorage.setItem("access_token", access_token)
             localStorage.setItem("refresh_token", refresh_token)
-                
-            // navigate to login page eventually
-            const response = await axios.post('http://127.0.0.1:5000/login', userData);
             
-            if (response.status === 200) {
-                setSuccess(true);  // Show success message
-                setError("");      // Clear any previous error messages
-                console.log("Login successful:", response.data);
-                navigate("/profile");
-            }
+            navigate("/profile");
         } catch (error) {
             setError("Login failed. Please try again.");
             setSuccess(false);  // Hide success message on failure
