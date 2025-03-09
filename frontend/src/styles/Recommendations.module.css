@@ -1,0 +1,221 @@
+/* Remove default margins and paddings from body */
+html, body {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  background-color: #020202;
+}
+
+a {
+  color: inherit;
+  font-family: inherit;
+  font-size: inherit;
+}
+
+/* Use CSS Grid to define header, main, and footer sections */
+.app-container {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  height: 120vh;
+  width: 100vw;
+  justify-self: stretch;
+}
+
+/* Header: Page title aligned to top-left */
+.header-container {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  text-align: center;
+  justify-self: center;
+  justify-content: center;
+  margin: 1rem;
+  width: 100vw;
+  border-bottom: thick double #BB0000;
+  background-color: #666;
+  font-family: monospace;
+  margin-top: 0;
+  margin-bottom: 20px;
+}
+.header-container button {
+  border-radius: 8px;
+  border: 1px solid;
+  font-size: large;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  border-color: red;
+  cursor: pointer;
+  transition: border-color 0.25s;
+  width: 120px;
+  height: 60px;
+  margin-left: 30px;
+  margin-top: 20px;
+  color: white;
+  padding: 10px 20px;
+}
+.page-title-container#rec-games {
+  font-size: small;
+}
+
+
+
+/* Main content: Center everything */
+.main-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  text-align: center; /* This will apply to children if needed */
+  margin-right:auto;
+  width: 100vw
+}
+
+.search-container {
+  position: relative;
+}
+.search-container input {
+  width: 300px;
+  height: 30px;
+  border-color: red;
+  background-color: #EEE;
+  color: black;
+  font-family: sans-serif;
+}
+
+.search-results {
+  position: absolute;
+  top: 100%; /* Places it right below the input */
+  left: 0;
+  right: 0;
+  background-color: white;
+  border: 1px solid #ccc;
+  z-index: 10;
+  /* Optional: add some padding, max-height, overflow scroll, etc. */
+}
+
+.search-result-item {
+  padding: 2px;
+  cursor: pointer;
+  color: black;
+  opacity: 0.8;
+}
+
+.search-result-item:hover {
+  background-color: #f0f0f0;
+}
+/* Footer: Can be styled as desired */
+.footer {
+  text-align: center;
+  padding: 0.5rem;
+}
+
+/* Title styling */
+.game-title {
+  font-size: 3.6rem;
+  margin-bottom: 40px;
+  font-family: monospace;
+  color: #DD0000
+}
+
+.game-info {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 10px;
+}
+
+/* Column for all the picture, arrow, and thumbs */
+.visuals-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 25px;
+}
+
+/* Row for arrows and game image */
+.arrows-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 25px;
+}
+
+/* Container for the game cover image */
+.image-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 300px;
+}
+
+/* Basic game cover styling */
+.game-cover {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* Container for thumbs */
+.thumbs-container {
+  display: flex;
+  justify-content: center;
+  gap: 60px; /* spacing between icons */
+}
+
+.text-container {
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.summary-container {
+    white-space: normal;
+    overflow-wrap:break-word;
+    font-size: 1.05rem;
+}
+
+/* Shared base icon styling for arrows and thumbs */
+.icon {
+  font-size: 3rem;
+  cursor: pointer;
+  border: 3px solid transparent;
+  border-radius: 50%;
+  padding: 20px;
+  transition: border-color 0.01s, background-color 0.01s;
+}
+
+/* Hover effect for icons */
+.icon:hover {
+  border-color: #888;
+  background-color: #f0f0f0;
+}
+
+/* Additional styling for arrow icons */
+.arrow-icon {
+  margin: 0 20px;
+  height: 1.3em;
+}
+
+/* Flash effect for arrow icons */
+.arrow-icon.clicked {
+  border-color: #00f7ff;
+  background-color: #ccffff;
+}
+
+.thumb-icon {
+  height: 1.2em;
+}
+
+/* Flash effect for thumb icons */
+.thumb-icon#thumb-up.clicked {
+  border-color: #28a745;
+  background-color: #c3e6cb;
+}
+.thumb-icon#thumb-down.clicked {
+  border-color: #a72828;
+  background-color: #e6c3c3;
+}

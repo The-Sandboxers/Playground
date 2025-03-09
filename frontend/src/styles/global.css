@@ -1,0 +1,89 @@
+/* Remove default margins and paddings from body */
+html, body {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Full viewport container, center content vertically/horizontally */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  text-align: center;
+}
+
+.page-title-container {
+  margin: 0;
+}
+
+/* Title styling */
+.game-title {
+  font-size: 3rem;
+  margin-bottom: 50px;
+}
+
+/* Row for arrows and game image */
+.arrows-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 50px;
+}
+
+/* Container for the game cover image */
+.image-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Basic game cover styling */
+.game-cover {
+  max-width: 400px;
+  height: auto;
+  display: block;
+  /* Add margin horizontally if desired */
+}
+
+/* Container for thumbs */
+.thumbs-container {
+  display: flex;
+  justify-content: center;
+  gap: 60px; /* spacing between icons */
+}
+
+/* Shared base icon styling for arrows and thumbs */
+.icon {
+  font-size: 3rem;
+  cursor: pointer;
+  border: 3px solid transparent;
+  border-radius: 50%;
+  padding: 20px;
+  transition: border-color 0.3s, background-color 0.3s;
+}
+
+/* Hover effect for icons */
+.icon:hover {
+  border-color: #888;
+  background-color: #f0f0f0;
+}
+
+/* Additional styling for arrow icons */
+.arrow-icon {
+  margin: 0 20px;
+}
+
+/* Flash effect for arrow icons */
+.arrow-icon.clicked {
+  border-color: #007bff;
+  background-color: #cce5ff;
+}
+
+/* Flash effect for thumb icons */
+.thumb-icon.clicked {
+  border-color: #28a745;
+  background-color: #c3e6cb;
+}

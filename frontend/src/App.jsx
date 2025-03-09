@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 // Import Font Awesome icons from react-icons
 import { FaArrowLeft, FaArrowRight, FaThumbsUp, FaThumbsDown } from 'react-icons/fa';
-import './App.css';
+import './styles/global.css'
 
 export default function App() {
   // Combine all icon states into one object
