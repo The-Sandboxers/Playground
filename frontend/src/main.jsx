@@ -2,7 +2,6 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import './index.css'
-import './styles/globals.css'
 import Profile from './pages/Profile.jsx'
 import Signup from './pages/Signup.jsx'
 import App from './App.jsx'
@@ -13,7 +12,7 @@ import Login from "./pages/Login.jsx"
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
-      <Routes class="container mx-auto">
+      <Routes>
         <Route path="/" element={<Home/>}/>
         <Route path="/app" element={<App/>}>
           <Route index element={<Navigate to="recs" replace />} />

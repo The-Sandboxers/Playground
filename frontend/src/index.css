@@ -45,7 +45,14 @@ html, body, #root{
   width: 100vw;
   margin: 0;
   padding: 0;
+  overflow-x:hidden;
+  overflow-y: scroll;
 }
+
+::-webkit-scrollbar {
+  display:none;
+}
+
 
 .dark {
   --background: oklch(0.145 0 0);
@@ -129,3 +136,4 @@ html, body, #root{
     @apply bg-background text-foreground;
   }
 }
+
