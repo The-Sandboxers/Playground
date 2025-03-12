@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import '../styles/Login.module.css'
+import '../styles/Login.css'
 import { requestBackend } from '../utils';
 
 export default function Login()

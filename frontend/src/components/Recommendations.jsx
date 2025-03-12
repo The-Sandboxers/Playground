@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 // Import Font Awesome icons from react-icons
 import { FaAngleLeft, FaAngleRight, FaRegThumbsUp, FaRegThumbsDown } from 'react-icons/fa6';
-import '../styles/Recommendations.module.css'
+import '../styles/Recommendations.css'
 import axios from 'axios'
 import ProfileButton from './ProfileButton.jsx';
 import SearchBar from './SearchBar.jsx';
