@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
 
 export default function Home() {
     return(
@@ -23,7 +24,7 @@ export default function Home() {
                 </div>
                 
             </div>
-            <div className="bg-background h-56"></div>
+            <Footer/>
         </div>
     );
 }
