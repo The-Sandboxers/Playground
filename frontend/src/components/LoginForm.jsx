@@ -9,11 +9,28 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { useState } from "react"
 
 export function LoginForm({
   className,
   ...props
 }) {
+
+  const [loginStatus, setLoginStatus] = useState("default");
+
+
+  const onSubmit = async (loginData) => {
+    try {
+      // Send POST request to the backend
+      const data = await requestBackend("POST", "http://127.0.0.1:5000/login", "None", loginData)
+      console.log("Login Succesful, rerouting to app",data)
+      setLoginStatus("successful")
+    }catch(error){
+      console.log("Login Failed", error)
+      setLoginStatus("unsuccessful")
+    }
+  };
+
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>

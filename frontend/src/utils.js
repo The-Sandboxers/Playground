@@ -15,7 +15,7 @@ const requestBackend = async (type, url, token_type = "access", data = null) => 
     const tokenKey = token_types[token_type]
     
     // Retrieve token from local storage, null if it doesn't exist
-    const token = tokenKey ? localStorage.getItem(tokenKey) : null
+    const token = localStorage.getItem(tokenKey)
     try{
         // Make axios request to url, using Authorization token as header or no headers otherwise
         console.log(type, url, token, data)

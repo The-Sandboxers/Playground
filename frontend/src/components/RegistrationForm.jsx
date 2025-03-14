@@ -16,6 +16,8 @@ import { cn } from "@/lib/utils";
 
 import { useState } from "react";
 
+import { requestBackend } from "../utils";
+
 
 const schema = yup.object().shape({
   username: yup.string().min(3, "Username must be at least 3 characters").required("Username is required"),
@@ -52,7 +54,7 @@ export default function RegistrationForm ({
   const onSubmit = async (signUpData) => {
     try {
       // Send POST request to the backend
-      const data = await requestBackend("POST", "http://127.0.0.1:5000/register", "None", userData)
+      const data = await requestBackend("POST", "http://127.0.0.1:5000/register", "None", signUpData)
       console.log("Registration Succesful",data)
       setRegistrationStatus("successful")
     }catch(error){
@@ -109,6 +111,11 @@ export default function RegistrationForm ({
               {/* Might want to change this s.t. the user knows why an error occurred, (account already exists, username, etc.) */}
               <p className="text-destructive text-md">There was an error registering your account.</p>
             </div>)}
+          {registrationStatus === "successful" && 
+          (<div className="flex flex-col gap-3">
+            {/* Might want to change this s.t. the user knows why an error occurred, (account already exists, username, etc.) */}
+            <p className="text-destructive text-md">Your account has been created.</p>
+          </div>)}
         </CardContent>
       </Card>
     </div>
