@@ -1,37 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { NavLink } from "react-router";
-import { LoginForm } from "@/components/login-form";
-import { useState, useEffect } from "react";
+import { LoginForm } from "../components/LoginForm";
+import { useState } from "react";
+import useModalControls from "./custom-hooks/useModalControls";
 
 
 export default function Navbar(){
     const [isModalOpen, setIsModalOpen] = useState(false)
 
-    // Disable scroll when modal is open
-    useEffect(() => {
-        if (isModalOpen) {
-            document.documentElement.style.overflow = "hidden";
-        } else {
-            document.documentElement.style.overflow = "scroll";
-        }
-
-        // Cleanup function to reset scroll when component unmounts or modal closes
-        return () => {
-            document.documentElement.style.overflow = "hidden";
-        };
-    }, [isModalOpen])
-
-    // Close modal on Escape key press
-    useEffect(() => {
-        const handleEscape = (event) => {
-            if (event.key === "Escape") {
-                setIsModalOpen(false);
-            }
-        };
-
-        document.addEventListener("keydown", handleEscape);
-        return () => document.removeEventListener("keydown", handleEscape);
-    }, []);
+    useModalControls(isModalOpen, setIsModalOpen);
 
 
     return(
@@ -40,11 +17,12 @@ export default function Navbar(){
                 <div className="max-w-screen flex flex-wrap items-center justify-between mx-8 p-4">
                     <span className="self-center text-2xl font-semibold whitespace-nowrap text-primary-foreground dark:text-primary">Playground</span>
                     <div >
-                        <Button size="lg" variant="secondary" onClick={() => setIsModalOpen(true)}>Log In</Button>
+                        <Button size="lg" variant="secondary" className="font-black text-md" onClick={() => setIsModalOpen(true)}>Log In</Button>
                     </div>
                 </div>
             </nav>
-            {isModalOpen && (<div className="fixed top-0 left-0 w-full h-full z-50 flex items-center justify-center" 
+            {/* On modal open, darkens screen and disables scrolling, user can click off or hit escape to close modal */}
+            {isModalOpen && (<div className="fixed top-0 left-0 w-full h-full z-50 flex items-center justify-center bg-primary/80" 
             onClick={() => setIsModalOpen(false)}>
                     <div onClick={(e) => e.stopPropagation()}> 
                         <LoginForm/>
