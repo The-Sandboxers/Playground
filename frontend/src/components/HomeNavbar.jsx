@@ -1,11 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { NavLink } from "react-router";
-import { LoginForm } from "../components/LoginForm";
+import { LoginForm } from "./LoginForm";
 import { useState } from "react";
 import useModalControls from "./custom-hooks/useModalControls";
 
 
-export default function Navbar(){
+export default function HomeNavbar(){
     const [isModalOpen, setIsModalOpen] = useState(false)
 
     useModalControls(isModalOpen, setIsModalOpen);
@@ -13,7 +13,7 @@ export default function Navbar(){
 
     return(
         <div>
-            <nav className="bg-transparent border-primary dark:bg-primary-foreground fixed z-10 top-0 left-0 w-full">
+            <nav className="bg-transparent border-background fixed z-10 top-0 left-0 w-full">
                 <div className="max-w-screen flex flex-wrap items-center justify-between mx-8 p-4">
                     <span className="self-center text-2xl font-semibold whitespace-nowrap text-primary-foreground dark:text-primary">Playground</span>
                     <div >

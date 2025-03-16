@@ -28,6 +28,14 @@ const schema = yup.object().shape({
     .oneOf([yup.ref("password"), null], "Passwords must match")
     .required("Confirm password is required"),
 });
+// enums for types of login issues
+const logInErrors = {
+  DEFAULT: "default",
+  SUCCESFUL: "succesful",
+  EMAIL_ERROR: "email",
+  USERNAME_ERROR: "username",
+  BACKEND_ERROR: "backend",
+}
 
 export default function RegistrationForm ({
     className,
@@ -48,17 +56,25 @@ export default function RegistrationForm ({
         },
   });
 
-  const [registrationStatus, setRegistrationStatus] = useState("default");
+  const [registrationStatus, setRegistrationStatus] = useState(logInErrors.DEFAULT);
 
-
+  
   const onSubmit = async (signUpData) => {
     try {
       // Send POST request to the backend
-      const data = await requestBackend("POST", "http://127.0.0.1:5000/register", "None", signUpData)
-      console.log("Registration Succesful",data)
-      setRegistrationStatus("successful")
+      const { success, data } = await requestBackend("POST", "http://127.0.0.1:5000/register", "None", signUpData)
+      // If response ok, registration successful
+      if(success){
+        console.log("Registration Succesful",data)
+        setRegistrationStatus("successful")
+      }else{
+        // If response not ok, but received, notify user of error
+        console.log("Registration unsuccessful: ", data)
+        setRegistrationStatus("unsuccesful")
+      }
     }catch(error){
-      console.log("Registration Failed", error)
+      // If response failed, 
+      console.log("Registration Failed. Unknown error occurred: ", error)
       setRegistrationStatus("unsuccessful")
     }
   };
@@ -106,7 +122,7 @@ export default function RegistrationForm ({
               </div>
             </div>
           </form>
-          {registrationStatus === "unsuccessful" && 
+          {(registrationStatus !== logInErrors.SUCCESFUL && registrationStatus !== logInErrors.DEFAULT) &&
             (<div className="flex flex-col gap-3">
               {/* Might want to change this s.t. the user knows why an error occurred, (account already exists, username, etc.) */}
               <p className="text-destructive text-md">There was an error registering your account.</p>
