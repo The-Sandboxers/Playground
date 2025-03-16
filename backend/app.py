@@ -152,6 +152,14 @@ def check_if_token_blacklisted(jwt_header, jwt_payload:dict):
     return token_in_redis is not None
 
 
+# route to verify if a token is valid, very lightweight and can be called by frontend
+@app.route("/verify-token", methods=["GET"])
+@jwt_required()
+def verify_token():
+    identity = get_jwt_identity()
+    return jsonify(logged_in_as=identity), 200
+
+# route to refresh access token
 @app.route("/refresh", methods=["POST"])
 @jwt_required(refresh=True)
 def refresh():
@@ -160,7 +168,6 @@ def refresh():
     return jsonify(access_token=access_token)
 
 
-# TO-DO: Implement Steam Login
 @app.route("/profile/connect_steam", methods=["GET"])
 @jwt_required()
 def connect_steam():
