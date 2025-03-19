@@ -6,7 +6,7 @@ export default function App(){
         <div>
             App
             <Navbar/>
-            {/* <Outlet/> */}
+            <Outlet/>
         </div>
     );
 }

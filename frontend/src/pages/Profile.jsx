@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { requestBackend } from '../utils';
+import './Profile.css';
 
 export default function Profile()
 {
@@ -27,23 +28,19 @@ export default function Profile()
     }, []);
 
     return (
-        <div className="profile-container">
-            <div className="horizontal-layout">
-                <div className="pic-and-linked-accounts">
-                    <h3>{username}</h3>
-                    <img src={profilePic} className="profile-pic"></img>
-                    <h3>Linked Services:</h3>
-                </div>
-                <div className="vertical-layout">
-                    <div className="played-games">
-                        <h3>Played Games</h3>
-                        <p>{playedGames}</p>
-                    </div>
-                    <div className="liked-games">
-                        <h3>Liked Games</h3>
-                        <p>{likedGames}</p>
-                    </div>
-                </div>
+        <div className="mt-18 grid grid-flow-col grid-rows-3 grid-cols-5 gap-4 p-5 font-black text-gray-200 text-lg">
+            <div className="col-span-2 row-span-3 rounded-lg bg-[#CA3434] p-5">
+                <h3>{username}</h3>
+                <img src={profilePic} className="rounded-full mx-auto"></img>
+                <h3>Linked Services:</h3>
+            </div>
+            <div className="col-span-3 rounded-lg bg-[#CA3434] p-5">
+                <h3>Played Games</h3>
+                <p>{playedGames}</p>
+            </div>
+            <div className="col-span-3 rounded-lg bg-[#CA3434] p-5">
+                <h3>Liked Games</h3>
+                <p>{likedGames}</p>
             </div>
         </div>
       );
