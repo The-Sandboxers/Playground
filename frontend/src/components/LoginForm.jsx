@@ -11,21 +11,29 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { requestBackend } from '../utils';
+//import { userInfo } from "os"
 
 export function LoginForm({
   className,
   ...props
 }) {
-
+  const navigate = useNavigate();
   const [loginStatus, setLoginStatus] = useState("default");
 
 
-  const onSubmit = async (loginData) => {
+  const onSubmit = async (event) => {
+    event.preventDefault();
+    const username = event.target.email.value;
+    const password = event.target.password.value;
+    console.log(event.target.email.value, event.target.password.value);
+    const loginData = {"username": username, "password": password};
     try {
       // Send POST request to the backend
       const data = await requestBackend("POST", "http://127.0.0.1:5000/login", "None", loginData)
       console.log("Login Succesful, rerouting to app",data)
       setLoginStatus("successful")
+      navigate("/application/recs");
     }catch(error){
       console.log("Login Failed", error)
       setLoginStatus("unsuccessful")
@@ -42,7 +50,7 @@ export function LoginForm({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form>
+          <form onSubmit={onSubmit}>
             <div className="flex flex-col gap-6">
               <div className="grid gap-3">
                 <Label htmlFor="email">Email</Label>
