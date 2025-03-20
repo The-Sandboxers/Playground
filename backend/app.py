@@ -94,27 +94,29 @@ def register_user():
         "username": new_user.username
     }), 200
 
-    
+# Login Route that requires user to be signed out    
 @app.route("/login", methods=["POST"])
 def login_user():
     username = request.json.get("username")
     password = request.json.get("password")
-    try:
-        user = User.query.filter_by(username=username).first()
-        
-        if not user:
-            raise ValueError("Invalid Credentials")
-        
-        if bcrypt.check_password_hash(user.password_hash, password):
-            access_token = create_access_token(identity=username)
-            refresh_token = create_refresh_token(identity=username)
-            return jsonify(access_token=access_token, refresh_token=refresh_token), 200
-        else:
-            raise ValueError("Invalid Credentials")
-       
-    except Exception as e:
-        print(f"Error: {e}")
+    
+    # Get user
+    user = User.query.filter_by(username=username).first()
+    
+    # If user doesn't exist, return error
+    if not user:
         return jsonify({"error": "Username or password incorrect"}), 401
+    
+    # If password is correct, return access and refresh token
+    if bcrypt.check_password_hash(user.password_hash, password):
+        access_token = create_access_token(identity=username)
+        refresh_token = create_refresh_token(identity=username)
+        return jsonify(access_token=access_token, refresh_token=refresh_token), 200
+    else:
+        # If password doesn't exist return error
+        return jsonify({"error": "Username or password incorrect"}), 401
+       
+        
 
 @app.route("/profile", methods=["GET"])
 @jwt_required()
