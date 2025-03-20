@@ -24,16 +24,25 @@ export function LoginForm({
 
   const onSubmit = async (event) => {
     event.preventDefault();
-    const username = event.target.email.value;
+    const username = event.target.username.value;
     const password = event.target.password.value;
-    console.log(event.target.email.value, event.target.password.value);
+    console.log(event.target.username.value, event.target.password.value);
     const loginData = {"username": username, "password": password};
     try {
       // Send POST request to the backend
-      const data = await requestBackend("POST", "http://127.0.0.1:5000/login", "None", loginData)
-      console.log("Login Succesful, rerouting to app",data)
-      setLoginStatus("successful")
-      navigate("/application/recs");
+      const response = await requestBackend("POST", "http://127.0.0.1:5000/login", "None", loginData)
+      if(response.success){
+        console.log("Login Succesful, rerouting to app",response.data)
+        // Store token if response is successful
+        localStorage.setItem("access_token", response.data.access_token)
+        localStorage.setItem("refresh_token", response.data.refresh_token)
+        setLoginStatus("successful")
+        navigate("/application/recs");
+      }else{
+        console.log("Login unsuccesful", response.data)
+        const loginError  = response.data
+      }
+      
     }catch(error){
       console.log("Login Failed", error)
       setLoginStatus("unsuccessful")
@@ -53,8 +62,8 @@ export function LoginForm({
           <form onSubmit={onSubmit}>
             <div className="flex flex-col gap-6">
               <div className="grid gap-3">
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" placeholder="m@example.com" required />
+                <Label htmlFor="username">Username</Label>
+                <Input id="username" type="text" placeholder="john" required />
               </div>
               <div className="grid gap-3">
                 <div className="flex items-center">
