@@ -30,7 +30,10 @@ def get_igdb_ids(steam_ids):
     STEAM_SERVICE_ID = "1"
     igdb_ids = []
     for id in steam_ids:
-        igdb_ids.append(json.loads(wrapper.api_request('external_games',f'fields id; where uid=({str(id)}) & external_game_source=({STEAM_SERVICE_ID});').decode())[0]["id"])
+        # Check for edge case where game cannot be found in IGDB
+        res = json.loads(wrapper.api_request('external_games',f'fields id; where uid=({str(id)}) & external_game_source=({STEAM_SERVICE_ID});').decode())
+        if len(res) == 1:
+            igdb_ids.append(res[0]["id"])
     return igdb_ids
 
   
@@ -60,6 +63,4 @@ def get_cover_url(igdb_id):
     # change t_thumb to t_cover_big to get proper sized cover and add https: prefix
     url_string="https:"+url_string.replace("t_thumb", "t_cover_big")
     return url_string
-
-
 
