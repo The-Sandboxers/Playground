@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router";
+import { Outlet, useNavigate } from "react-router";
 import { useState, useEffect } from "react";
 import { requestBackend } from "../utils";
 
@@ -62,5 +62,5 @@ export default function AuthWrapper(){
         return <div className="fixed top-0 left-0 bg-background text-9xl">Loading...</div>; // Wait for the token validity check
     }
     
-    return <>{tokenIsValid && children}</>; // Only render the children if the token is valid
+    return <>{tokenIsValid && <Outlet/>}</>; // Only render the children if the token is valid
 }
