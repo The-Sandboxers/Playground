@@ -26,7 +26,6 @@ export function LoginForm({
     event.preventDefault();
     const username = event.target.username.value;
     const password = event.target.password.value;
-    console.log(event.target.username.value, event.target.password.value);
     const loginData = {"username": username, "password": password};
     try {
       // Send POST request to the backend

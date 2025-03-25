@@ -13,11 +13,14 @@ export default function Profile()
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const data = await requestBackend("GET", "http://127.0.0.1:5000/profile");
-                console.log(ImageData)
-                setUsername(data.username);
-                setLikedGames(data.liked_games);
-                setPlayedGames(data.all_games);
+                const {success, data} = await requestBackend("GET", "http://127.0.0.1:5000/profile");
+                if (success){
+                    console.log(data)
+                    setUsername(data.username);
+                    setLikedGames(data.liked_games);
+                    setPlayedGames(data.all_games);
+                }
+                
             } catch (error) {
                 console.log(error);
             }
