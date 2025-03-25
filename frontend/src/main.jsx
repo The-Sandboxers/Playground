@@ -15,13 +15,13 @@ createRoot(document.getElementById('root')).render(
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home/>}/>
-        {/* <Route element={<AuthWrapper/>}> */}
+        <Route element={<AuthWrapper/>}>
           <Route path="/application" element={<App/>}>
             <Route index element={<Navigate to="recs" replace/>} />
             <Route path="recs" element={<Recommendations/>}/>
             <Route path="profile" element={<Profile/>}/>
           </Route>
-        {/* </Route> */}
+        </Route>
       </Routes>
     </BrowserRouter>
   </StrictMode>
