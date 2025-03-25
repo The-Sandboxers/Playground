@@ -26,7 +26,7 @@ def fetch_access_token_Twitch(TWITCH_SECRET_KEY, TWITCH_CLIENT_ID):
 # gets list of platform IDs from platforms.json file
 def get_platforms():
     # get data from platforms.json
-    with open("esdata/platforms.json") as json_file:
+    with open("backend/esdata/platforms.json") as json_file:
         data = json.load(json_file)
     # append id for each platform to list
     plist = []
@@ -55,7 +55,7 @@ limit = 500
 # initial api request
 byte_array = wrapper.api_request(
         'games',
-        f'fields *; where rating_count>50 & category=0 & rating>5 & platforms=({platforms}); limit {limit}; offset 0;')
+        f'fields *; sort id asc; where rating_count>20 & category=0 & rating>5 & platforms=({platforms}); limit {limit}; offset 0;')
 i=1
 # decode to string and remove extra bracket added by api
 result = byte_array.decode()
@@ -66,7 +66,7 @@ empty_result = False
 while not empty_result:
     temp_result = wrapper.api_request(
             'games',
-            f'fields *; where rating_count>50 & category=0 & rating>5 & platforms=({platforms});  limit {limit}; offset {offset*i};')
+            f'fields *; sort id asc; where rating_count>20 & category=0 & rating>5 & platforms=({platforms});  limit {limit}; offset {offset*i};')
     if temp_result==EMPTY_API_RESULT:
         empty_result = True
     else:
@@ -80,5 +80,5 @@ while not empty_result:
 result +="]"
 
 # write to json file
-with open('esdata/game_data.json', 'w') as f:
+with open('backend/esdata/game_data.json', 'w') as f:
     f.write(json.dumps(result, ensure_ascii=True))
