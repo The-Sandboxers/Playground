@@ -7,7 +7,7 @@ from config import ApplicationConfig
 from urllib.parse import urlencode
 from elasticsearch import Elasticsearch
 from dotenv import load_dotenv
-from helpers import get_owned_steam_game_ids, get_cover_url
+from helpers import get_owned_steam_game_ids, get_cover_url, get_igdb_ids
 import os
 import logging
 import redis
@@ -36,7 +36,7 @@ migrate = Migrate(app, db)
 bcrypt = Bcrypt(app)
 
 # Initialize Redis
-redis_client = redis.StrictRedis(host="localhost", port=6379, db=0, decode_responses=True)
+redis_client = redis.StrictRedis(host="redis", db=0, decode_responses=True)
 BLACKLISTED_TOKENS_KEY = "blacklisted_tokens"
 
 STEAM_OPENID_URL = "https://steamcommunity.com/openid/login"
@@ -319,11 +319,42 @@ def load_games_from_steam():
     try:
         username = get_jwt_identity()
         user = User.query.filter_by(username=username).first()
-        user_steamid = user.steam_id
+        user_steamid = int(user.steam_id)
+        
+        # Get user's games from steam via steam id
         owned_steam_ids = get_owned_steam_game_ids(user_steamid, STEAM_API_KEY)
-        # Finish adding games by checking owned_steam_ids against elasticsearch
-    except:
-        return jsonify(error="Error getting games from steam"), 500
+        print(owned_steam_ids)
+        # Convert steam ids to igdb ids
+        igdb_games = get_igdb_ids(owned_steam_ids)
+        
+        index="games"
+        result_games = []
+        # Search for the igdb_ids in the elasticsearch db
+        for game_id in igdb_games:
+            query={
+                "match":{
+                    "igdb_id": game_id
+                }
+            }
+            fields=["name"]
+            result = es.search(index=index, query=query, fields=fields)
+            # If hits returns something after searching then append game_id
+            if result["hits"]["hits"]:
+                print(result["hits"]["hits"])
+                result_games.append(game_id)
+        
+        added_games = []
+        # Add games to user's games in database        
+        for game_id in result_games:
+            if UserGame.query.filter_by(user_id=user.id, igdb_id=game_id).first() is None:
+                new_added_game = UserGame(igdb_id=game_id, user_id=user.id)
+                db.session.add(new_added_game)
+                db.session.commit()
+                added_games.append(game_id)
+        # conversion ensures unique items but compatibility with jsonify()
+        return jsonify(added_games)
+    except Exception as e:
+        return jsonify(error=e), 500
 
 
 if __name__ == '__main__':
