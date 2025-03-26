@@ -318,8 +318,8 @@ def random_game():
 def recommend_game():
     # hardcoded played_games values for now - in future get profile
     played_games = [72, 71, 17000, 1879, 11798]
-    recommendations = recommendation_algorithm(played_games)
-    
+    return jsonify(recommendation_algorithm(played_games))
+
 
 # TO-DO: Finish Implemnting load steam games 
 @app.route("/profile/load_games_steam", methods=["POST"])
