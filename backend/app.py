@@ -8,6 +8,7 @@ from urllib.parse import urlencode
 from elasticsearch import Elasticsearch
 from dotenv import load_dotenv
 from helpers import get_owned_steam_game_ids, get_cover_url, get_igdb_ids
+from recommendations import recommendation_algorithm
 import os
 import logging
 import redis
@@ -311,6 +312,14 @@ def random_game():
     except:
         return jsonify(error="Error getting random game"), 500
 
+# route to get recommended games based on list of played games
+# TODO this probably needs a JWT cause it will be based on the profile
+@app.route("/games/recommend", methods=["GET"])
+def recommend_game():
+    # hardcoded played_games values for now - in future get profile
+    played_games = [72, 71, 17000, 1879, 11798]
+    recommendations = recommendation_algorithm(played_games)
+    
 
 # TO-DO: Finish Implemnting load steam games 
 @app.route("/profile/load_games_steam", methods=["POST"])
