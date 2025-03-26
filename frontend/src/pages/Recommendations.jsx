@@ -95,9 +95,10 @@ export default function Recomendations() {
     if (index > -1) {
       setCurrentIndex(index)
     } else {
-      const left = gameList.slice(0, currentIndex)
-      const right = gameList.slice(currentIndex)
+      const left = gameList.slice(0, currentIndex + 1)
+      const right = gameList.slice(currentIndex + 1)
       setGameList(left.concat(item, right))
+      setCurrentIndex(currentIndex + 1)
     }
     
   }
