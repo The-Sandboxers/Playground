@@ -42,9 +42,3 @@ def recommendation_algorithm(played_games):
   result = es.search(index=index, query=query)
   return result
   
-def main():
-    recommendation_algorithm()
-
-if __name__ == "__main__":
-    main()
-  
