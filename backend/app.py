@@ -27,7 +27,7 @@ db.init_app(app)
 jwt = JWTManager(app)
 
 # Enable CORS
-CORS(app)
+CORS(app, origins=["http://localhost:5173"])
 
 # Allow database migrations
 migrate = Migrate(app, db)
@@ -48,9 +48,7 @@ load_dotenv()
 ELASTIC_PASSWORD = os.getenv('ELASTIC_PASSWORD')
 es = Elasticsearch('http://playground-elasticsearch-1:9200', basic_auth=("elastic", ELASTIC_PASSWORD))
 
-@app.route('/')
-def hello_world():
-    return 'Hello, Mom!'
+
 
 @app.route('/test', methods=["GET"])
 def test_request():
@@ -124,15 +122,36 @@ def user_profile():
     username = get_jwt_identity()
     user = User.query.filter_by(username=username).first()
     all_games_ids = []
+    all_games = []
     liked_games_ids = []
+    liked_games = []
+    index="games"
     for game in UserGame.query.filter_by(user_id=user.id).all():
-        all_games_ids.append(game.igdb_id)
-        if game.liked_status == True:
-            liked_games_ids.append(game.igdb_id)
+        # query igdb for game source
+        query={
+            "match":{
+                "igdb_id": game.igdb_id
+            }
+        }
+        fields=["name"]
+        result = es.search(index=index, query=query, fields=fields)
+        
+        for doc in result["hits"]["hits"]:
+            cover_url = get_cover_url(doc["_source"]["igdb_id"])
+            doc["_source"]["cover_url"]=[cover_url]
+            all_games.append(doc["_source"])
+            all_games_ids.append(game.igdb_id)
+            
+            # If game is liked append it to ids and list of sources    
+            if game.liked_status == True:
+                liked_games_ids.append(game.igdb_id)
+                liked_games.append(doc["_source"])
         
     return jsonify({"username": user.username,
                     "all_games": all_games_ids,
-                    "liked_games": liked_games_ids
+                    "liked_games": liked_games_ids,
+                    "all_games_sources": all_games,
+                    "liked_games_sources": liked_games,
         }), 200
 
 
@@ -326,7 +345,7 @@ def load_games_from_steam():
         
         # Get user's games from steam via steam id
         owned_steam_ids = get_owned_steam_game_ids(user_steamid, STEAM_API_KEY)
-        print(owned_steam_ids)
+        print(f"Owned Games:{owned_steam_ids}")
         # Convert steam ids to igdb ids
         igdb_games = get_igdb_ids(owned_steam_ids)
         
@@ -339,7 +358,7 @@ def load_games_from_steam():
                     "igdb_id": game_id
                 }
             }
-            fields=["name"]
+            fields=["igdb_id"]
             result = es.search(index=index, query=query, fields=fields)
             # If hits returns something after searching then append game_id
             if result["hits"]["hits"]:
@@ -358,6 +377,54 @@ def load_games_from_steam():
         return jsonify(added_games)
     except Exception as e:
         return jsonify(error=e), 500
+    
+@app.route("/recs/load_recs", methods=["GET"])
+@jwt_required()
+# parameter played_games: list of igdb_ids
+def recommendation_algorithm():
+    
+    username = get_jwt_identity()
+    user = User.query.filter_by(username=username).first()
+    played_games = []
+    
+    for game in UserGame.query.filter_by(user_id=user.id).all():
+        played_games.append(game.igdb_id)
+    query_docs = []
+    for game in played_games:
+        index="games"
+        query={
+                "match":{
+                "igdb_id": game
+                }
+            }
+        fields=["name"]
+        result = es.search(index=index, query=query, fields=fields)
+
+        # create query object of elasticsearch IDs for all games to use in querying
+        for doc in result["hits"]["hits"]:
+            doc_id = doc["_id"]
+            dict_item = {}
+            dict_item["_id"]=doc_id
+            query_docs.append(dict_item)
+
+
+    query ={
+        "more_like_this" : {
+        "fields" : ["keywords"],
+        "like" : query_docs,
+        "min_term_freq" : 0,
+        "min_doc_freq" : 1,
+        "minimum_should_match": '0%',
+        }
+    }
+
+    result = es.search(index=index, query=query, size=10)
+    doc_games = []
+    for doc in result["hits"]["hits"]:
+        cover_url = get_cover_url(doc["_source"]["igdb_id"])
+        doc["_source"]["cover_url"]=[cover_url]
+        doc_games.append(doc["_source"])
+    return jsonify(doc_games)
 
 
 if __name__ == '__main__':

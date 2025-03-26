@@ -2,7 +2,7 @@
 from igdb.wrapper import IGDBWrapper
 from dotenv import load_dotenv
 from igdb.wrapper import IGDBWrapper
-import os
+import os, time
 import requests
 import json
 from requests import get
@@ -30,10 +30,12 @@ def get_igdb_ids(steam_ids):
     STEAM_SERVICE_ID = "1"
     igdb_ids = []
     for id in steam_ids:
+        time.sleep(.25)
         # Check for edge case where game cannot be found in IGDB
         res = json.loads(wrapper.api_request('external_games',f'fields id; where uid=({str(id)}) & external_game_source=({STEAM_SERVICE_ID});').decode())
         if len(res) == 1:
             igdb_ids.append(res[0]["id"])
+        print(f"Games IGDB: {igdb_ids}")
     return igdb_ids
 
   
@@ -51,7 +53,7 @@ def get_owned_steam_game_ids(steam_id, STEAM_API_KEY):
     
     response = get(url, params=params)
     data = response.json().get("response", {})
-    
+    print(data)
     return [game["appid"] for game in data.get("games", [])]
 
 # returns a cover url for a given igdb_id
@@ -63,4 +65,6 @@ def get_cover_url(igdb_id):
     # change t_thumb to t_cover_big to get proper sized cover and add https: prefix
     url_string="https:"+url_string.replace("t_thumb", "t_cover_big")
     return url_string
+
+
 
