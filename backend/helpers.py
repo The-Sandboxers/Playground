@@ -2,7 +2,7 @@
 from igdb.wrapper import IGDBWrapper
 from dotenv import load_dotenv
 from igdb.wrapper import IGDBWrapper
-import os
+import os, time
 import requests
 import json
 from requests import get
@@ -30,6 +30,7 @@ def get_igdb_ids(steam_ids):
     STEAM_SERVICE_ID = "1"
     igdb_ids = []
     for id in steam_ids:
+        time.sleep(.25)
         # Check for edge case where game cannot be found in IGDB
         res = json.loads(wrapper.api_request('external_games',f'fields id; where uid=({str(id)}) & external_game_source=({STEAM_SERVICE_ID});').decode())
         if len(res) == 1:
