@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FaAngleLeft, FaAngleRight, FaRegThumbsUp, FaRegThumbsDown } from 'react-icons/fa6';
 import axios from 'axios';
-import ProfileButton from '../components/ProfileButton';
 import SearchBar from '../components/SearchBar';
 
 export default function Recomendations() {
@@ -88,17 +87,25 @@ export default function Recomendations() {
     getFirstGame(0);
   }, []);
 
+  const handleSearchSelection = (item) => {
+    console.log("item: ", item)
+
+    const index = gameList.findIndex(game => game.igdb_id === item.igdb_id) 
+
+    if (index > -1) {
+      setCurrentIndex(index)
+    } else {
+      const left = gameList.slice(0, currentIndex)
+      const right = gameList.slice(currentIndex)
+      setGameList(left.concat(item, right))
+    }
+    
+  }
+
   return (
-    <div className="grid grid-rows-[auto,1fr,auto] min-h-screen w-screen">
-      <header className="grid grid-cols-[1fr_auto_1fr] text-center justify-center m-2 h-30 w-screen border-b-4 border-double border-red-500 bg-[#666] font-mono mt-0">
-        {/* <ProfileButton />
-        <div className="h">
-          <h1>Playground!</h1>
-          <h2 id="rec-games" className="text-sm">Recommended Games</h2>
-        </div> */}
-      </header>
+    <div className="grid grid-rows-[1fr,auto] min-h-screen w-screen">
       <main className="flex flex-col items-center justify-start text-center mr-auto w-screen">
-        <SearchBar />
+        <SearchBar onSelect={handleSearchSelection}/>
         <h1 className="text-6xl mb-10 mt-5 font-mono text-[#DD0000]">
           <a href={gameList[currentIndex] ? gameList[currentIndex].url : ''}>
             {gameList[currentIndex] ? gameList[currentIndex].name : 'Loading...'}

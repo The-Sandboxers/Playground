@@ -283,14 +283,17 @@ def search_games():
                 "name": search_term
             }
         }
-        result = es.search(index=index, query=query, fields=fields, size=5)
+        # result = es.search(index=index, query=query, fields=fields, size=5)
+        result = es.search(index=index, query=query, size=5)
         result_games = []
         for doc in result["hits"]["hits"]:
-            result_games.append(doc["_source"]["name"])
+            cover_url = get_cover_url(doc["_source"]["igdb_id"])
+            doc["_source"]["cover_url"]=[cover_url]
+            result_games.append(doc["_source"])
         # conversion ensures unique items but compatibility with jsonify()
-        return jsonify(result=list(set(result_games)))
-    except:
-        return jsonify(error="Error getting search results"), 500
+        return jsonify(result=result_games)
+    except Exception as e:
+        return jsonify(error=f"Error getting search results:\n{e}"), 500
 
 @app.route("/games/random_game", methods=["GET"])
 def random_game():

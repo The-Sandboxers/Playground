@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-function SearchBar() {
+function SearchBar({ onSelect }) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
 
@@ -11,7 +11,7 @@ function SearchBar() {
       if (query) {
         axios.get('http://127.0.0.1:5000/games/search', { params: { search_term: query } })
           .then(response => {
-            console.log(response.data.result);
+            console.log(response.data);
             setResults(response.data.result);
           })
           .catch(error => console.log('Error fetching data:', error));
@@ -22,6 +22,14 @@ function SearchBar() {
 
     return () => clearTimeout(timer);
   }, [query]);
+
+  const handleItemClick = (item) => {
+    setQuery("");
+    setResults([]);
+    if (onSelect) {
+      onSelect(item);
+    }
+  };
 
   return (
     <div className="relative">
@@ -37,8 +45,8 @@ function SearchBar() {
       {results.length > 0 && (
         <div className="absolute top-full left-0 right-0 bg-white border border-gray-300 z-10">
           {results.map((item, index) => (
-            <div key={index} className="p-0.5 cursor-pointer text-black opacity-80 hover:bg-gray-100">
-              {item}
+            <div key={index} onClick={() => handleItemClick(item)} className="p-0.5 cursor-pointer text-black opacity-80 hover:bg-gray-100">
+              {item.name}
             </div>
           ))}
         </div>
