@@ -27,7 +27,7 @@ db.init_app(app)
 jwt = JWTManager(app)
 
 # Enable CORS
-CORS(app)
+CORS(app, origins=["http://localhost:5173"])
 
 # Allow database migrations
 migrate = Migrate(app, db)
