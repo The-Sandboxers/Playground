@@ -76,7 +76,7 @@ export default function Profile()
                     <div className="grid grid-cols-6 gap-4">
                         {playedGamesData.map((element, index) => (
                             <div key={index} className="flex-shrink-0 w-32 h-43">  {/* Fixed width and height for images */}
-                                <img src={element.cover_url} alt={`Game cover ${index}`} className="object-cover w-full h-full rounded-lg" />
+                                <img src={element.cover_url} alt={`Game cover ${index}`} className="object-cover w-full h-full rounded-md" />
                             </div>
                         ))}
                     </div>
@@ -85,10 +85,10 @@ export default function Profile()
             <div className="col-span-3 rounded-lg bg-foreground p-5">
                 <p className="mb-4">Liked Games</p>
                 <div className="h-72 overflow-auto">  {/* Fixed height for the container */}
-                    <div className="flex flex-wrap justify-between gap-4">
+                    <div className="grid grid-cols-6 gap-4">
                         {likedGamesData.map((element, index) => (
                             <div key={index} className="flex-shrink-0 w-32 h-43">  {/* Fixed width and height for images */}
-                                <img src={element.cover_url} alt={`Game cover ${index}`} className="object-cover w-full h-full rounded-lg" />
+                                <img src={element.cover_url} alt={`Game cover ${index}`} className="object-cover w-full h-full rounded-md" />
                             </div>
                         ))}
                     </div>
