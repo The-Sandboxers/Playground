@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { requestBackend } from '../utils';
+import { requestBackend, steamAuth, redirectBack } from '../utils';
 import { Button } from "@/components/ui/button";
 
 export default function Profile()
@@ -51,13 +51,8 @@ export default function Profile()
 
     async function steamAuthenticate() {
         try {
-            const {success, data} = await requestBackend("GET", "http://localhost:5000/profile/connect_steam");
-            console.log(data)
-            if (success && data.redirected) {
-                window.location.href = response.url; // Redirect the user to the Steam login page
-            } else {
-                console.log('No redirect occurred. Response:', response);
-            }
+            steamAuth()
+            redirectBack()
     
         } catch (error) {
             console.log(error);
@@ -69,30 +64,34 @@ export default function Profile()
         <div className="mt-18 grid grid-flow-col grid-rows-3 grid-cols-5 gap-4 p-5 font-black text-gray-200 text-2xl">
             <div className="col-span-2 row-span-3 rounded-lg bg-card-foreground p-5">
                 <h3>{username}</h3>
-                <img src={profilePic} className="rounded-full mx-auto"></img>
+                <img src={profilePic} className="rounded-full mx-auto" />
                 
                 <Button size="lg" variant="secondary" className="font-black text-md mb-4" onClick={signOut}>Sign Out</Button>
                 <h3 className="mb-4">Linked Services:</h3>
                 <Button size="lg" variant="secondary" className="font-black text-md mb-4" onClick={steamAuthenticate}>Connect to Steam</Button>
             </div>
             <div className="col-span-3 rounded-lg bg-foreground p-5">
-                <p className="mb-4">Played Games</p>
-                <div className="flex space-x-4">
-                    {playedGamesData.map((element, index) => (
-                    <div key={index} className="">
-                        <img src={element.cover_url}/>
+                <p className="mb-4">Liked Games</p>
+                <div className="h-72 overflow-auto">  {/* Fixed height for the container */}
+                    <div className="grid grid-cols-6 gap-4">
+                        {playedGamesData.map((element, index) => (
+                            <div key={index} className="flex-shrink-0 w-32 h-43">  {/* Fixed width and height for images */}
+                                <img src={element.cover_url} alt={`Game cover ${index}`} className="object-cover w-full h-full rounded-lg" />
+                            </div>
+                        ))}
                     </div>
-                    ))}
                 </div>
             </div>
             <div className="col-span-3 rounded-lg bg-foreground p-5">
                 <p className="mb-4">Liked Games</p>
-                <div className="flex space-x-4">
-                    {likedGamesData.map((element, index) => (
-                    <div key={index} className="">
-                        <img src={element.cover_url}/>
+                <div className="h-72 overflow-auto">  {/* Fixed height for the container */}
+                    <div className="flex flex-wrap justify-between gap-4">
+                        {likedGamesData.map((element, index) => (
+                            <div key={index} className="flex-shrink-0 w-32 h-43">  {/* Fixed width and height for images */}
+                                <img src={element.cover_url} alt={`Game cover ${index}`} className="object-cover w-full h-full rounded-lg" />
+                            </div>
+                        ))}
                     </div>
-                    ))}
                 </div>
             </div>
         </div>

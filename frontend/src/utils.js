@@ -27,7 +27,8 @@ const requestBackend = async (type, url, token_type = "access", data = null) => 
             url: url,
             headers: {
                 ...(token ? { Authorization: `Bearer ${token}` }: {}),
-                'Content-Type': "application/json"        
+                'Content-Type': "application/json",
+                'Access-Control-Allow-Origin': '*'        
             },
             data: data ? JSON.stringify(data) : null
         })
@@ -42,4 +43,32 @@ const requestBackend = async (type, url, token_type = "access", data = null) => 
     
 }
 
-export {requestBackend}
+const steamAuth = async () => {
+    const steamOpenIdUrl = "https://steamcommunity.com/openid/login"; // Replace with the correct OpenID URL if needed
+
+    const params = new URLSearchParams({
+        "openid.ns": "http://specs.openid.net/auth/2.0",
+        "openid.mode": "checkid_setup",
+        "openid.return_to": window.location.origin + "/application/profile", // Equivalent to Flask's `url_for(..., _external=True)`
+        "openid.realm": window.location.origin, // Equivalent to `request.host_url`
+        "openid.identity": "http://specs.openid.net/auth/2.0/identifier_select",
+        "openid.claimed_id": "http://specs.openid.net/auth/2.0/identifier_select"
+    });
+
+    window.location.href = `${steamOpenIdUrl}?${params.toString()}`;
+}
+
+const redirectBack = async () => {
+    const params = new URLSearchParams(window.location.search);
+    
+    const steamId = params.get("openid.claimed_id"); // This contains the Steam ID
+    const openidMode = params.get("openid.mode");
+    const openidSig = params.get("openid.sig");
+
+    if (steamId && openidMode === "id_res" && openidSig){
+        const {success, data} = requestBackend("POST","http://127.0.0.1:5000/profile/steam/callback","access",{ steamId, openidMode, openidSig })
+        return {success, data}
+    }
+}
+
+export {requestBackend, steamAuth, redirectBack}
