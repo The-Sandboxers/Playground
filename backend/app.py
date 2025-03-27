@@ -7,10 +7,11 @@ from config import ApplicationConfig
 from urllib.parse import urlencode
 from elasticsearch import Elasticsearch
 from dotenv import load_dotenv
-from helpers import get_owned_steam_game_ids, get_cover_url, get_igdb_ids
+from helpers import get_owned_steam_game_ids, get_cover_url, get_igdb_ids, verify_open_id
 import os
 import logging
 import redis
+from requests import post
 # import users table
 from models import db, User, UserGame
 
@@ -205,10 +206,7 @@ def connect_steam():
 @app.route("/profile/steam/callback", methods=["POST"])
 @jwt_required()
 def steam_auth_callback():
-    if "openid.identity" not in request.args:
-        return jsonify({"error": "Steam login failed"}), 400
-    
-    steam_id = request.args.get("openid.identity").split("/")[-1]
+    steam_id = verify_open_id(request, STEAM_OPENID_URL)
     
     # Check if user is signed in
     username = get_jwt_identity()
