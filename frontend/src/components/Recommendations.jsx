@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 // Import Font Awesome icons from react-icons
 import { FaAngleLeft, FaAngleRight, FaRegThumbsUp, FaRegThumbsDown } from 'react-icons/fa6';
-import axios from 'axios'
+import axios from 'axios';
 
 export default function Recommendations() {
   // Clicked Icons state handling
@@ -34,70 +34,54 @@ export default function Recommendations() {
     }
   }, [clickedIcons]);
 
-  async function getRandomGame() {
+  // Function to query the new endpoint that returns multiple recommendations
+  async function getGameRecommendations() {
     try {
-      const response = await axios.get('http://127.0.0.1:5000/games/random_game', { timeout: 5000 }); //allow a 5 second timeout
-      return response.data;
+      const response = await axios.get('http://127.0.0.1:5000/recs/load_recs', { timeout: 5000 }); // Querying the new endpoint
+      return response.data;  // returns an array of games
     } catch (err) {
       console.log("Unhandled error: " + err);
-      return null;
+      return [];
     }
   }
 
-  //Handling the Carousel of games
+  // Handling the Carousel of games
   const [currGameData, setCurrGameData] = useState({
     name: "NOT Rocket League",
     url_cover: "https://cdn1.epicgames.com/offer/9773aa1aa54f4f7b80e44bef04986cea/EGS_RocketLeague_PsyonixLLC_S2_1200x1600-b61e9e7ec5d3294dfa514f23fc7f0684"
   });
 
-  const [gameList, setGameList] = useState([null]); // the list of items
-  const [currentIndex, setCurrentIndex] = useState(0); // current index in the list
+  const [gameList, setGameList] = useState([]); // Array of game items
+  const [currentIndex, setCurrentIndex] = useState(0); // Current index in the list
 
-  async function handleArrowClick(direction)  {
+  async function handleArrowClick(direction) {
     if (direction === "right") {
       const nextIndex = currentIndex + 1;
       if (nextIndex >= gameList.length) {
-        const additionalItems = [await getRandomGame()];
-        // console.log(additionalItems[0]);
+        const additionalItems = await getGameRecommendations(); // Get additional games if needed
         setGameList(prevItems => [...prevItems, ...additionalItems]);
       }
       setCurrentIndex(nextIndex);
-      
+
     } else if (direction === "left") {
       const prevIndex = currentIndex - 1;
       if (prevIndex < 0) {
-        const additionalItems = [await getRandomGame()];
-        // console.log(additionalItems[0]);
-        // Prepend new items and adjust current index so that the first newly added item is shown.
+        const additionalItems = await getGameRecommendations(); // Prepend new games if at the start
         setGameList(prevItems => [...additionalItems, ...prevItems]);
         setCurrentIndex(additionalItems.length - 1);
       } else {
         setCurrentIndex(prevIndex);
       }
     }
-  };
-
+  }
 
   useEffect(() => {
-    async function getFirstGame(numTries) {
-      const MAX_TRIES = 120 // should get us about 20 seconds of attempting to reach the backend
-      const firstGame = await getRandomGame();
-      if (!firstGame) {
-        // At first if you don't succeed, try try again
-        if (numTries > MAX_TRIES) {
-          console.log("failed to load too many times");
-          console.log(err);
-          return;
-        }
-        else {
-          await new Promise(r => setTimeout(r, 500)); // sleeps for 0.5 seconds (istg stack overflow said its the best way to do it in JS)
-          getFirstGame(numTries + 1);
-      }
-      }
-      setGameList([firstGame]);
+    async function loadInitialGames() {
+      const firstBatchOfGames = await getGameRecommendations(); // Initial set of games
+      setGameList(firstBatchOfGames);
       setCurrentIndex(0);
     }
-    getFirstGame(0);
+    loadInitialGames();
   }, []);
 
   return (
@@ -119,7 +103,6 @@ export default function Recommendations() {
                 className={`icon arrow-icon ${clickedIcons.leftArrow ? 'clicked' : ''}`}
                 onClick={() => {handleIconClick('leftArrow'), handleArrowClick('left')}}
               />
-
               <div className="image-container">
                 <img
                   src={gameList[currentIndex] ? gameList[currentIndex].cover_url : null}
@@ -149,9 +132,6 @@ export default function Recommendations() {
           <div className="text-container">
             <span className="rating-container">
               <h3>Rating: {gameList[currentIndex] ? (gameList[currentIndex].aggregated_rating / 10).toFixed(2) : 'Loading...'}/10</h3>
-            </span>
-            <span className="">
-
             </span>
             <div className="summary-container">
               <p>{gameList[currentIndex] ? gameList[currentIndex].summary : ''}</p>
