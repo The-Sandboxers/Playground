@@ -49,7 +49,7 @@ export default function Recomendations() {
       return [];
     }
   }
-  async function addLikedGame(liked_game_id) {
+  async function handleThumbsUp(liked_game_id) {
     const {success, data} = await requestBackend("POST", "http://127.0.0.1:5000/recs/liked_game", "access", {liked_game_id})
     try{
       if(success){
@@ -60,6 +60,10 @@ export default function Recomendations() {
       console.log("Error liking games")
     }
   }
+
+  const handleThumbsDown = (liked_game_id) => {
+    setGameList(prevItems => prevItems.filter(game => game.igdb_id !== liked_game_id)); // Simply remove the game
+  };
 
   const [gameList, setGameList] = useState([null]); // the list of items
   const [currentIndex, setCurrentIndex] = useState(0); // current index in the list
@@ -163,12 +167,12 @@ export default function Recomendations() {
                 className={`text-[3rem] cursor-pointer border-[3px] border-transparent rounded-full p-4 transition-colors duration-75 h-16 w-16 ${clickedIcons.thumbUp ? 'border-[#28a745] bg-[#c3e6cb]' : 'hover:border-gray-500 hover:bg-gray-100'}`}
                 onClick={() => {
                   handleIconClick('thumbUp'),
-                  addLikedGame(gameList[currentIndex].igdb_id);
+                  handleThumbsUp(gameList[currentIndex].igdb_id);
                 }}
               />
               <FaRegThumbsDown
                 className={`text-[3rem] cursor-pointer border-[3px] border-transparent rounded-full p-4 transition-colors duration-75 h-16 w-16 ${clickedIcons.thumbDown ? 'border-[#a72828] bg-[#e6c3c3]' : 'hover:border-gray-500 hover:bg-gray-100'}`}
-                onClick={() => handleIconClick('thumbDown')}
+                onClick={() => {handleIconClick('thumbDown'), handleThumbsDown(gameList[currentIndex].igdb_id)}}
               />
             </div>
           </div>

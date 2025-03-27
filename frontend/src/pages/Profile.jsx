@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { requestBackend, steamAuth, redirectBack } from '../utils';
+import { requestBackend, steamAuth} from '../utils';
 import { Button } from "@/components/ui/button";
 
 export default function Profile()
@@ -23,8 +23,8 @@ export default function Profile()
                 if (success){
                     setUsername(data.username);
                     setLikedGames(data.liked_games);
-                    setPlayedGames(data.all_games);
-                    setPlayedGamesData(data.all_games_sources);
+                    setPlayedGames(data.played_games);
+                    setPlayedGamesData(data.played_games_sources);
                     setLikedGamesData(data.liked_games_sources);
                 }
                 
@@ -49,15 +49,30 @@ export default function Profile()
         }
     }
 
-    async function steamAuthenticate() {
-        try {
-            steamAuth()
-            redirectBack()
-    
-        } catch (error) {
-            console.log(error);
-        }
-    }
+    useEffect(() => {
+        // Detect Steam callback and trigger backend authentication
+        const handleSteamCallback = async () => {
+            const params = new URLSearchParams(window.location.search);
+            const steamId = params.get("openid.claimed_id");
+            const openidMode = params.get("openid.mode");
+            const openidSig = params.get("openid.sig");
+
+            if (steamId && openidMode === "id_res" && openidSig) {
+                const { success } = await requestBackend(
+                    "POST",
+                    "http://127.0.0.1:5000/profile/steam/callback",
+                    "access",
+                    { steamId, openidMode, openidSig }
+                );
+
+                if (success) {
+                    await requestBackend("POST", "http://127.0.0.1:5000/profile/load_games_steam", "access");
+                }
+            }
+        };
+
+        handleSteamCallback();
+    }, []);
 
 
     return (
@@ -68,10 +83,10 @@ export default function Profile()
                 
                 <Button size="lg" variant="secondary" className="font-black text-md mb-4" onClick={signOut}>Sign Out</Button>
                 <h3 className="mb-4">Linked Services:</h3>
-                <Button size="lg" variant="secondary" className="font-black text-md mb-4" onClick={steamAuthenticate}>Connect to Steam</Button>
+                <Button size="lg" variant="secondary" className="font-black text-md mb-4" onClick={steamAuth}>Connect to Steam</Button>
             </div>
             <div className="col-span-3 rounded-lg bg-foreground p-5">
-                <p className="mb-4">Liked Games</p>
+                <p className="mb-4">Played Games</p>
                 <div className="h-72 overflow-auto">  {/* Fixed height for the container */}
                     <div className="grid grid-cols-6 gap-4">
                         {playedGamesData.map((element, index) => (
