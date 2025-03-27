@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FaAngleLeft, FaAngleRight, FaRegThumbsUp, FaRegThumbsDown } from 'react-icons/fa6';
 import axios from 'axios';
 import SearchBar from '../components/SearchBar';
+import { requestBackend } from '../utils';
 
 export default function Recomendations() {
   const [clickedIcons, setClickedIcons] = useState({
@@ -33,6 +34,56 @@ export default function Recomendations() {
     }
   }, [clickedIcons]);
 
+  // Function to query the new endpoint that returns multiple recommendations
+  async function getGameRecommendations() {
+    try {
+      const dataList = gameList
+        .filter(game => game && game.igdb_id) // Ensure game exists and has an igdb_id
+        .map(game => game.igdb_id)
+      console.log(dataList)
+      const {success, data} = await requestBackend("POST", "http://127.0.0.1:5000/recs/load_recs", "access", 
+        {curr_games_list:dataList}) // Querying the new endpoint
+      return data;  // returns an array of games
+    } catch (err) {
+      console.log("Unhandled error: " + err);
+      return [];
+    }
+  }
+  async function addLikedGame(liked_game_id) {
+    const {success, data} = await requestBackend("POST", "http://127.0.0.1:5000/recs/liked_game", "access", {liked_game_id})
+    try{
+      if(success){
+      setGameList(prevItems => prevItems.filter(game => game.igdb_id !== liked_game_id));
+      console.log(data)
+    }
+    }catch{
+      console.log("Error liking games")
+    }
+  }
+
+  const [gameList, setGameList] = useState([null]); // the list of items
+  const [currentIndex, setCurrentIndex] = useState(0); // current index in the list
+
+  async function handleArrowClick(direction) {
+    if (direction === "right") {
+      const nextIndex = currentIndex + 1;
+      if (nextIndex >= gameList.length) {
+        const additionalItems = await getGameRecommendations(); // Get additional games if needed
+        setGameList(prevItems => [...prevItems, ...additionalItems]);
+      }
+      setCurrentIndex(nextIndex);
+
+    } else if (direction === "left") {
+      const prevIndex = currentIndex - 1;
+      if (prevIndex < 0) {
+        const additionalItems = await getGameRecommendations(); // Prepend new games if at the start
+        setGameList(prevItems => [...additionalItems, ...prevItems]);
+        setCurrentIndex(additionalItems.length - 1);
+      } else {
+        setCurrentIndex(prevIndex);
+      }
+    }
+  }
   async function getRandomGame() {
     try {
       const response = await axios.get('http://127.0.0.1:5000/games/random_game', { timeout: 5000 });
@@ -42,30 +93,6 @@ export default function Recomendations() {
       return null;
     }
   }
-
-  const [gameList, setGameList] = useState([null]); // the list of items
-  const [currentIndex, setCurrentIndex] = useState(0); // current index in the list
-
-  async function handleArrowClick(direction)  {
-    if (direction === "right") {
-      const nextIndex = currentIndex + 1;
-      if (nextIndex >= gameList.length) {
-        const additionalItems = [await getRandomGame()];
-        setGameList(prevItems => [...prevItems, ...additionalItems]);
-      }
-      setCurrentIndex(nextIndex);
-      
-    } else if (direction === "left") {
-      const prevIndex = currentIndex - 1;
-      if (prevIndex < 0) {
-        const additionalItems = [await getRandomGame()];
-        setGameList(prevItems => [...additionalItems, ...prevItems]);
-        setCurrentIndex(additionalItems.length - 1);
-      } else {
-        setCurrentIndex(prevIndex);
-      }
-    }
-  };
 
   useEffect(() => {
     async function getFirstGame(numTries) {
@@ -134,7 +161,10 @@ export default function Recomendations() {
             <div className="flex justify-center gap-14">
               <FaRegThumbsUp
                 className={`text-[3rem] cursor-pointer border-[3px] border-transparent rounded-full p-4 transition-colors duration-75 h-16 w-16 ${clickedIcons.thumbUp ? 'border-[#28a745] bg-[#c3e6cb]' : 'hover:border-gray-500 hover:bg-gray-100'}`}
-                onClick={() => handleIconClick('thumbUp')}
+                onClick={() => {
+                  handleIconClick('thumbUp'),
+                  addLikedGame(gameList[currentIndex].igdb_id);
+                }}
               />
               <FaRegThumbsDown
                 className={`text-[3rem] cursor-pointer border-[3px] border-transparent rounded-full p-4 transition-colors duration-75 h-16 w-16 ${clickedIcons.thumbDown ? 'border-[#a72828] bg-[#e6c3c3]' : 'hover:border-gray-500 hover:bg-gray-100'}`}
