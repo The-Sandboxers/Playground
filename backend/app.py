@@ -138,6 +138,8 @@ def user_profile():
         result = es.search(index=index, query=query, fields=fields)
         
         for doc in result["hits"]["hits"]:
+            all_games_ids.append(game.igdb_id)
+        
             if doc["_source"]["cover_url"]==None:
                 doc_id = doc["_id"]
                 cover_url = get_cover_url(doc["_source"]["igdb_id"])
