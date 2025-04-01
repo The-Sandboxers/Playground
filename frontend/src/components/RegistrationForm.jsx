@@ -122,11 +122,11 @@ export default function RegistrationForm ({
               </div>
             </div>
           </form>
-          {(registrationStatus !== logInErrors.SUCCESFUL && registrationStatus !== logInErrors.DEFAULT) &&
+          {/* {(registrationStatus !== logInErrors.SUCCESFUL && registrationStatus !== logInErrors.DEFAULT) &&
             (<div className="flex flex-col gap-3">
               {/* Might want to change this s.t. the user knows why an error occurred, (account already exists, username, etc.) */}
-              <p className="text-destructive text-md">There was an error registering your account.</p>
-            </div>)}
+              {/* <p className="text-destructive text-md">There was an error registering your account.</p>
+            </div>)} */}
           {registrationStatus === "successful" && 
           (<div className="flex flex-col gap-3">
             {/* Might want to change this s.t. the user knows why an error occurred, (account already exists, username, etc.) */}

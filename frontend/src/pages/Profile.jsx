@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { requestBackend, steamAuth} from '../utils';
+import { requestBackend, steamAuth, redirectBack } from '../utils';
 import { Button } from "@/components/ui/button";
 
 export default function Profile()
@@ -49,30 +49,16 @@ export default function Profile()
         }
     }
 
-    useEffect(() => {
-        // Detect Steam callback and trigger backend authentication
-        const handleSteamCallback = async () => {
-            const params = new URLSearchParams(window.location.search);
-            const steamId = params.get("openid.claimed_id");
-            const openidMode = params.get("openid.mode");
-            const openidSig = params.get("openid.sig");
-
-            if (steamId && openidMode === "id_res" && openidSig) {
-                const { success } = await requestBackend(
-                    "POST",
-                    "http://127.0.0.1:5000/profile/steam/callback",
-                    "access",
-                    { steamId, openidMode, openidSig }
-                );
-
-                if (success) {
-                    await requestBackend("POST", "http://127.0.0.1:5000/profile/load_games_steam", "access");
-                }
-            }
-        };
-
-        handleSteamCallback();
-    }, []);
+    async function steamAuthenticate() {
+        try {
+            await steamAuth()
+            await redirectBack()
+            const{success,data} = await requestBackend("POST", "http://127.0.0.1:5000/profile/load_games_steam")
+    
+        } catch (error) {
+            console.log(error);
+        }
+    }
 
 
     return (
@@ -83,7 +69,7 @@ export default function Profile()
                 
                 <Button size="lg" variant="secondary" className="font-black text-md mb-4" onClick={signOut}>Sign Out</Button>
                 <h3 className="mb-4">Linked Services:</h3>
-                <Button size="lg" variant="secondary" className="font-black text-md mb-4" onClick={steamAuth}>Connect to Steam</Button>
+                <Button size="lg" variant="secondary" className="font-black text-md mb-4" onClick={steamAuthenticate}>Connect to Steam</Button>
             </div>
             <div className="col-span-3 rounded-lg bg-foreground p-5">
                 <p className="mb-4">Played Games</p>

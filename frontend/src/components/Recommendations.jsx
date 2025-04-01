@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 // Import Font Awesome icons from react-icons
 import { FaAngleLeft, FaAngleRight, FaRegThumbsUp, FaRegThumbsDown } from 'react-icons/fa6';
 import axios from 'axios';
+import { requestBackend } from '../utils';
 
 export default function Recommendations() {
   // Clicked Icons state handling
@@ -42,6 +43,17 @@ export default function Recommendations() {
     } catch (err) {
       console.log("Unhandled error: " + err);
       return [];
+    }
+  }
+  async function addLikedGame(likedGameId) {
+    const {success, data} = await requestBackend("POST", "http://127.0.0.1:5000/recs/liked_game", "access", likedGameId)
+    try{
+      if(success){
+      setGameList(prevItems => prevItems.filter(game => game.igdb_id !== likedGameId));
+      console.log(data)
+    }
+    }catch{
+      console.log("Error liking games")
     }
   }
 
@@ -120,7 +132,10 @@ export default function Recommendations() {
               <FaRegThumbsUp
                 className={`icon thumb-icon ${clickedIcons.thumbUp ? 'clicked' : ''}`}
                 id="thumb-up"
-                onClick={() => handleIconClick('thumbUp')}
+                onClick={() => {
+                  handleIconClick('thumbUp'),
+                  addLikedGame(gameList[currentIndex].igdb_id);
+                }}
               />
               <FaRegThumbsDown
                 className={`icon thumb-icon ${clickedIcons.thumbDown ? 'clicked' : ''}`}
