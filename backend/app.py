@@ -138,8 +138,13 @@ def user_profile():
         result = es.search(index=index, query=query, fields=fields)
         
         for doc in result["hits"]["hits"]:
-            cover_url = get_cover_url(doc["_source"]["igdb_id"])
-            doc["_source"]["cover_url"]=[cover_url]
+            if doc["_source"]["cover_url"]==None:
+                doc_id = doc["_id"]
+                cover_url = get_cover_url(doc["_source"]["igdb_id"])
+                doc["_source"]["cover_url"]=[cover_url]
+                es.update(index=index, id=doc_id, body={"doc":doc["_source"]})
+            all_games.append(doc["_source"])
+            all_games_ids.append(game.igdb_id)
             
             # If game is liked append it to ids and list of sources    
             if game.liked_status == True:
@@ -283,8 +288,6 @@ def game_info():
         fields=["name"]
         result = es.search(index=index, query=query, fields=fields)
         for doc in result["hits"]["hits"]:
-            cover_url = get_cover_url(game_id)
-            doc["_source"]["cover_url"]=[cover_url]
             return jsonify(doc["_source"])
     except:
         return jsonify(error="Error getting game info"), 500
@@ -306,8 +309,11 @@ def search_games():
         result = es.search(index=index, query=query, size=5)
         result_games = []
         for doc in result["hits"]["hits"]:
-            cover_url = get_cover_url(doc["_source"]["igdb_id"])
-            doc["_source"]["cover_url"]=[cover_url]
+            if doc["_source"]["cover_url"]==None:
+                doc_id = doc["_id"]
+                cover_url = get_cover_url(doc["_source"]["igdb_id"])
+                doc["_source"]["cover_url"]=[cover_url]
+                es.update(index=index, id=doc_id, body={"doc":doc["_source"]})
             result_games.append(doc["_source"])
         # conversion ensures unique items but compatibility with jsonify()
         return jsonify(result=result_games)
@@ -327,8 +333,11 @@ def random_game():
         }
         result = es.search(index=index, query=query, size=1)
         for doc in result["hits"]["hits"]:
-            cover_url = get_cover_url(doc["_source"]["igdb_id"])
-            doc["_source"]["cover_url"]=[cover_url]
+            if doc["_source"]["cover_url"]==None:
+                doc_id = doc["_id"]
+                cover_url = get_cover_url(doc["_source"]["igdb_id"])
+                doc["_source"]["cover_url"]=[cover_url]
+                es.update(index=index, id=doc_id, body={"doc":doc["_source"]})
             return jsonify(doc["_source"])
     except:
         return jsonify(error="Error getting random game"), 500
@@ -436,8 +445,11 @@ def recommendation_algorithm():
     result = es.search(index=index, query=query, size=10)
     doc_games = []
     for doc in result["hits"]["hits"]:
-        cover_url = get_cover_url(doc["_source"]["igdb_id"])
-        doc["_source"]["cover_url"]=[cover_url]
+        if doc["_source"]["cover_url"]==None:
+            doc_id = doc["_id"]
+            cover_url = get_cover_url(doc["_source"]["igdb_id"])
+            doc["_source"]["cover_url"]=[cover_url]
+            es.update(index=index, id=doc_id, body={"doc":doc["_source"]})
         doc_games.append(doc["_source"])
     return jsonify(doc_games)
 
