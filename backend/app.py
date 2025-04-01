@@ -146,6 +146,7 @@ def user_profile():
             all_games.append(doc["_source"])
             all_games_ids.append(game.igdb_id)
             
+            
             # If game is liked append it to ids and list of sources    
             if game.liked_status == True:
                 liked_games_ids.append(game.igdb_id)
