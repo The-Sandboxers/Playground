@@ -24,7 +24,7 @@ export default function Profile()
                     setUsername(data.username);
                     setLikedGames(data.liked_games);
                     setPlayedGames(data.played_games);
-                    setPlayedGamesData(data.played_games_sources);
+                    setPlayedGamesData(data.all_games_sources);
                     setLikedGamesData(data.liked_games_sources);
                 }
                 
