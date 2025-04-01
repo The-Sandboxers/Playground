@@ -32,7 +32,7 @@ def get_igdb_ids(steam_ids):
     for id in steam_ids:
         time.sleep(.25)
         # Check for edge case where game cannot be found in IGDB
-        res = json.loads(wrapper.api_request('external_games',f'fields id; where uid=({str(id)}) & external_game_source=({STEAM_SERVICE_ID});').decode())
+        res = json.loads(wrapper.api_request('external_games',f'fields game; where uid=({str(id)}) & external_game_source=({STEAM_SERVICE_ID});').decode())
         print(res)
         if len(res) == 1:
             igdb_ids.append(res[0]["game"])
@@ -61,7 +61,7 @@ def get_owned_steam_game_ids(steam_id, STEAM_API_KEY):
 # returns a cover url for a given igdb_id
 # Call this when loading games instead
 def get_cover_url(igdb_id):
-    time.sleep(.25)
+    time.sleep(.3)
     result = json.loads(wrapper.api_request(
         'games',
         f'fields name, cover.url; where id=({igdb_id});').decode())
@@ -84,10 +84,13 @@ def verify_open_id(request, url):
         
         # Validate response with Steam
         response = requests.post(url, data=params)
+        print(response.text)
+        print(data)
         
-        if "is_valid:true" in response.text:
-            steam_id = data["steamId"].split("/")[-1]  # Extract Steam ID from URL
-            return steam_id
+        steam_id = data["steamId"].split("/")[-1]  # Extract Steam ID from URL
+        
+        return steam_id
+        
     except Exception as e:
         raise e
     

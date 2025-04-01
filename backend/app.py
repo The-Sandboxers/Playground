@@ -122,8 +122,8 @@ def login_user():
 def user_profile():
     username = get_jwt_identity()
     user = User.query.filter_by(username=username).first()
-    all_games_ids = []
-    all_games = []
+    played_games_ids = []
+    played_games = []
     liked_games_ids = []
     liked_games = []
     index="games"
@@ -140,18 +140,19 @@ def user_profile():
         for doc in result["hits"]["hits"]:
             cover_url = get_cover_url(doc["_source"]["igdb_id"])
             doc["_source"]["cover_url"]=[cover_url]
-            all_games.append(doc["_source"])
-            all_games_ids.append(game.igdb_id)
             
             # If game is liked append it to ids and list of sources    
             if game.liked_status == True:
                 liked_games_ids.append(game.igdb_id)
                 liked_games.append(doc["_source"])
+            if game.played_status == True:
+                played_games_ids.append(game.igdb_id)
+                played_games.append(doc["_source"])
         
     return jsonify({"username": user.username,
-                    "all_games": all_games_ids,
+                    "played_games": played_games_ids,
                     "liked_games": liked_games_ids,
-                    "all_games_sources": all_games,
+                    "played_games_sources": played_games,
                     "liked_games_sources": liked_games,
         }), 200
 
@@ -165,6 +166,7 @@ def logout_user():
     redis_client.set(jti, "", ex=app.config["JWT_ACCESS_TOKEN_EXPIRES"])
     return jsonify({"msg":"Successfully logged out",
                     "token-type": ttype}), 200
+
 
 
 @jwt.token_in_blocklist_loader
@@ -215,8 +217,8 @@ def steam_auth_callback():
     user = User.query.filter_by(username=username).first()
     if not user:
         return jsonify({"error":"User does not exist"}), 500
-    if User.query.filter_by(steam_id=steam_id).first():
-        return jsonify({"error": "This steam account is already linked to another account"}), 409
+    # if User.query.filter_by(steam_id=steam_id).first():
+    #     return jsonify({"error": "This steam account is already linked to another account"}), 409
     user.steam_id = steam_id
     db.session.commit()
     return jsonify({"message": "Steam account linked successfully"}), 200
@@ -367,7 +369,7 @@ def load_games_from_steam():
         # Add games to user's games in database        
         for game_id in result_games:
             if UserGame.query.filter_by(user_id=user.id, igdb_id=game_id).first() is None:
-                new_added_game = UserGame(igdb_id=game_id, user_id=user.id)
+                new_added_game = UserGame(igdb_id=game_id, user_id=user.id, played_status = True)
                 db.session.add(new_added_game)
                 db.session.commit()
                 added_games.append(game_id)
@@ -376,11 +378,11 @@ def load_games_from_steam():
     except Exception as e:
         return jsonify(error=e), 500
     
-@app.route("/recs/load_recs", methods=["GET"])
+@app.route("/recs/load_recs", methods=["POST"])
 @jwt_required()
 # parameter played_games: list of igdb_ids
 def recommendation_algorithm():
-    
+    games_list = request.json.get("curr_games_list")
     username = get_jwt_identity()
     user = User.query.filter_by(username=username).first()
     played_games = []
@@ -392,7 +394,7 @@ def recommendation_algorithm():
         index="games"
         query={
                 "match":{
-                "igdb_id": game
+                    "igdb_id": game
                 }
             }
         fields=["name"]
@@ -404,12 +406,27 @@ def recommendation_algorithm():
             dict_item = {}
             dict_item["_id"]=doc_id
             query_docs.append(dict_item)
-
-
+    unlike_docs = []
+    # Get unlike games:
+    for game_id in games_list:
+        query_unlike={
+            "match":{
+                "igdb_id": game_id
+            }
+        }
+        fields=["name"]
+        result = es.search(index=index, query=query_unlike, fields=fields)
+        for doc in result["hits"]["hits"]:
+            doc_id = doc["_id"]
+            dict_item = {}
+            dict_item["_id"]=doc_id
+            unlike_docs.append(dict_item)
+            
     query ={
         "more_like_this" : {
         "fields" : ["keywords"],
         "like" : query_docs,
+        "unlike":unlike_docs,
         "min_term_freq" : 0,
         "min_doc_freq" : 1,
         "minimum_should_match": '0%',
@@ -424,6 +441,23 @@ def recommendation_algorithm():
         doc_games.append(doc["_source"])
     return jsonify(doc_games)
 
+@app.route("/recs/liked_game", methods=["POST"])
+@jwt_required()
+def add_liked_game():
+    liked_game_id = request.json.get("liked_game_id")
+    username = get_jwt_identity()
+    user = User.query.filter_by(username=username).first()
+    
+    # Checks if game already exists in user's profile
+    game_exists = UserGame.query.filter_by(user_id = user.id, igdb_id = liked_game_id).first() is not None
+    if game_exists:
+        return jsonify({"error": "Game already in likes"}), 406
+
+    new_added_game = UserGame(user_id=user.id, igdb_id = liked_game_id, liked_status = True)
+    db.session.add(new_added_game)
+    db.session.commit()
+    
+    return jsonify({"success":True}),200
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
