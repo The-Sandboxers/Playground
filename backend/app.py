@@ -467,6 +467,30 @@ def add_liked_game():
     if game_exists:
         return jsonify({"error": "Game already in likes"}), 406
 
+    new_added_game = UserGame(user_id=user.id, igdb_id = liked_game_id, liked_status = True)
+    db.session.add(new_added_game)
+    db.session.commit()
+    
+    return jsonify({"success":True}),200
+
+@app.route("/recs/disliked_game", methods=["POST"])
+@jwt_required()
+def add_disliked_game():
+    disliked_game_id = request.json.get("disliked_game_id")
+    username = get_jwt_identity()
+    user = User.query.filter_by(username=username).first()
+    
+    # Checks if game already exists in user's profile
+    game_exists = UserGame.query.filter_by(user_id = user.id, igdb_id = disliked_game_id).first() is not None
+    if game_exists:
+        return jsonify({"error": "Game already in likes"}), 406
+
+    new_added_game = UserGame(user_id=user.id, igdb_id = disliked_game_id, liked_status = True)
+    db.session.add(new_added_game)
+    db.session.commit()
+    
+    return jsonify({"success":True}),200
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
 
