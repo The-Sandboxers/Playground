@@ -31,6 +31,7 @@ class UserGame(db.Model):
     igdb_id: Mapped[int] = mapped_column(Integer)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
     liked_status: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    disliked_status: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     played_status: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     favorited_status: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     
