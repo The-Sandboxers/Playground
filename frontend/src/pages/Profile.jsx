@@ -75,11 +75,11 @@ export default function Profile()
                 <p className="mb-4">Played Games</p>
                 <div className="h-72 overflow-auto">  {/* Fixed height for the container */}
                     <div className="grid grid-cols-6 gap-4">
-                        {playedGamesData.map((element, index) => (
+                        {playedGames.length ? (playedGamesData.map((element, index) => (
                             <div key={index} className="flex-shrink-0 w-32 h-43">  {/* Fixed width and height for images */}
                                 <img src={element.cover_url} alt={`Game cover ${index}`} className="object-cover w-full h-full rounded-md" />
                             </div>
-                        ))}
+                        ))) : <div></div>}
                     </div>
                 </div>
             </div>
@@ -87,11 +87,11 @@ export default function Profile()
                 <p className="mb-4">Liked Games</p>
                 <div className="h-72 overflow-auto">  {/* Fixed height for the container */}
                     <div className="grid grid-cols-6 gap-4">
-                        {likedGamesData.map((element, index) => (
+                        {likedGames.length ? (likedGamesData.map((element, index) => (
                             <div key={index} className="flex-shrink-0 w-32 h-43">  {/* Fixed width and height for images */}
                                 <img src={element.cover_url} alt={`Game cover ${index}`} className="object-cover w-full h-full rounded-md" />
                             </div>
-                        ))}
+                        ))) : <div></div>}
                     </div>
                 </div>
             </div>
