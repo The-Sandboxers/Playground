@@ -3,6 +3,7 @@ import { FaAngleLeft, FaAngleRight, FaRegThumbsUp, FaRegThumbsDown } from 'react
 import axios from 'axios';
 import SearchBar from '../components/SearchBar';
 import { requestBackend } from '../utils';
+import { Button } from '@/components/ui/button';
 
 export default function Recomendations() {
   const [clickedIcons, setClickedIcons] = useState({
@@ -50,14 +51,31 @@ export default function Recomendations() {
     }
   }
   async function handleThumbsUp(liked_game_id) {
-    const {success, data} = await requestBackend("POST", "http://127.0.0.1:5000/recs/liked_game", "access", {liked_game_id})
+    const {success, data} = await requestBackend("POST", "http://127.0.0.1:5000/recs/liked_game", "access", {"liked_game_id": liked_game_id})
     try{
       if(success){
       setGameList(prevItems => prevItems.filter(game => game.igdb_id !== liked_game_id));
       console.log(data)
     }
     }catch{
-      console.log("Error liking games")
+      console.log("Error liking games");
+      console.log(data);
+    }
+  }
+
+  async function addAlreadyPlayedGame(played_game_id) {
+    console.log('addAlreadyPlayedGame called')
+    const {success, data} = await requestBackend("POST", "http://127.0.0.1:5000/profile/add_games", "access", {"added_games": [played_game_id]});
+    try {
+      if (success) {
+        console.log('Success status: ' + success);
+        console.log(data);
+      setGameList(prevItems => prevItems.filter(game => game.igdb_id !== played_game_id)); // Simply remove the game
+      } else {
+        console.log('failure :(')
+      }
+    } catch {
+      console.log("Error adding game")
     }
   }
 
@@ -175,6 +193,10 @@ export default function Recomendations() {
                 onClick={() => {handleIconClick('thumbDown'), handleThumbsDown(gameList[currentIndex].igdb_id)}}
               />
             </div>
+            <Button
+              className={' cursor-pointer border-[3px] border-transparent p-4 transition-colors duration-75 mt-5'}
+              onClick={() => {addAlreadyPlayedGame(gameList[currentIndex].igdb_id)} }
+            >Already Played</Button>
           </div>
           <div className="max-w-[400px] flex flex-col items-center justify-center">
             <span className="rating-container">
