@@ -139,7 +139,7 @@ export default function Recomendations() {
       <main className="flex flex-col items-center justify-start text-center mr-auto w-screen">
         <SearchBar onSelect={handleSearchSelection}/>
         <h1 className="text-6xl mb-10 mt-5 font-mono text-[#DD0000]">
-          <a href={gameList[currentIndex] ? gameList[currentIndex].url : ''}>
+          <a href={gameList[currentIndex] ? gameList[currentIndex].url : ''} target="_blank">
             {gameList[currentIndex] ? gameList[currentIndex].name : 'Loading...'}
           </a>
         </h1>
