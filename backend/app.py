@@ -483,7 +483,7 @@ def add_disliked_game():
     if game_exists:
         return jsonify({"error": "Game already in likes"}), 406
 
-    new_added_game = UserGame(user_id=user.id, igdb_id = disliked_game_id, liked_status = True)
+    new_added_game = UserGame(user_id=user.id, igdb_id = disliked_game_id, disliked_status = True)
     db.session.add(new_added_game)
     db.session.commit()
     
