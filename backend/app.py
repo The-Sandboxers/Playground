@@ -142,10 +142,7 @@ def user_profile():
                 doc_id = doc["_id"]
                 cover_url = get_cover_url(doc["_source"]["igdb_id"])
                 doc["_source"]["cover_url"]=[cover_url]
-                es.update(index=index, id=doc_id, body={"doc":doc["_source"]})
-            all_games.append(doc["_source"])
-            all_games_ids.append(game.igdb_id)
-            
+                es.update(index=index, id=doc_id, body={"doc":doc["_source"]})            
             
             # If game is liked append it to ids and list of sources    
             if game.liked_status == True:
