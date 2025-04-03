@@ -138,8 +138,14 @@ def user_profile():
         result = es.search(index=index, query=query, fields=fields)
         
         for doc in result["hits"]["hits"]:
-            cover_url = get_cover_url(doc["_source"]["igdb_id"])
-            doc["_source"]["cover_url"]=[cover_url]
+            if doc["_source"]["cover_url"]==None:
+                doc_id = doc["_id"]
+                cover_url = get_cover_url(doc["_source"]["igdb_id"])
+                doc["_source"]["cover_url"]=[cover_url]
+                es.update(index=index, id=doc_id, body={"doc":doc["_source"]})
+            all_games.append(doc["_source"])
+            all_games_ids.append(game.igdb_id)
+            
             
             # If game is liked append it to ids and list of sources    
             if game.liked_status == True:
@@ -283,8 +289,6 @@ def game_info():
         fields=["name"]
         result = es.search(index=index, query=query, fields=fields)
         for doc in result["hits"]["hits"]:
-            cover_url = get_cover_url(game_id)
-            doc["_source"]["cover_url"]=[cover_url]
             return jsonify(doc["_source"])
     except:
         return jsonify(error="Error getting game info"), 500
@@ -306,8 +310,11 @@ def search_games():
         result = es.search(index=index, query=query, size=5)
         result_games = []
         for doc in result["hits"]["hits"]:
-            cover_url = get_cover_url(doc["_source"]["igdb_id"])
-            doc["_source"]["cover_url"]=[cover_url]
+            if doc["_source"]["cover_url"]==None:
+                doc_id = doc["_id"]
+                cover_url = get_cover_url(doc["_source"]["igdb_id"])
+                doc["_source"]["cover_url"]=[cover_url]
+                es.update(index=index, id=doc_id, body={"doc":doc["_source"]})
             result_games.append(doc["_source"])
         # conversion ensures unique items but compatibility with jsonify()
         return jsonify(result=result_games)
@@ -327,8 +334,11 @@ def random_game():
         }
         result = es.search(index=index, query=query, size=1)
         for doc in result["hits"]["hits"]:
-            cover_url = get_cover_url(doc["_source"]["igdb_id"])
-            doc["_source"]["cover_url"]=[cover_url]
+            if doc["_source"]["cover_url"]==None:
+                doc_id = doc["_id"]
+                cover_url = get_cover_url(doc["_source"]["igdb_id"])
+                doc["_source"]["cover_url"]=[cover_url]
+                es.update(index=index, id=doc_id, body={"doc":doc["_source"]})
             return jsonify(doc["_source"])
     except:
         return jsonify(error="Error getting random game"), 500
@@ -389,6 +399,7 @@ def recommendation_algorithm():
     
     for game in UserGame.query.filter_by(user_id=user.id).all():
         played_games.append(game.igdb_id)
+
     query_docs = []
     for game in played_games:
         index="games"
@@ -408,6 +419,7 @@ def recommendation_algorithm():
             query_docs.append(dict_item)
     unlike_docs = []
     # Get unlike games:
+    # TODO get disliked games from the user's profile ?
     for game_id in games_list:
         query_unlike={
             "match":{
@@ -436,8 +448,11 @@ def recommendation_algorithm():
     result = es.search(index=index, query=query, size=10)
     doc_games = []
     for doc in result["hits"]["hits"]:
-        cover_url = get_cover_url(doc["_source"]["igdb_id"])
-        doc["_source"]["cover_url"]=[cover_url]
+        if doc["_source"]["cover_url"]==None:
+            doc_id = doc["_id"]
+            cover_url = get_cover_url(doc["_source"]["igdb_id"])
+            doc["_source"]["cover_url"]=[cover_url]
+            es.update(index=index, id=doc_id, body={"doc":doc["_source"]})
         doc_games.append(doc["_source"])
     return jsonify(doc_games)
 
@@ -459,5 +474,24 @@ def add_liked_game():
     
     return jsonify({"success":True}),200
 
+@app.route("/recs/disliked_game", methods=["POST"])
+@jwt_required()
+def add_disliked_game():
+    disliked_game_id = request.json.get("disliked_game_id")
+    username = get_jwt_identity()
+    user = User.query.filter_by(username=username).first()
+    
+    # Checks if game already exists in user's profile
+    game_exists = UserGame.query.filter_by(user_id = user.id, igdb_id = disliked_game_id).first() is not None
+    if game_exists:
+        return jsonify({"error": "Game already in likes"}), 406
+
+    new_added_game = UserGame(user_id=user.id, igdb_id = disliked_game_id, liked_status = True)
+    db.session.add(new_added_game)
+    db.session.commit()
+    
+    return jsonify({"success":True}),200
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
+
