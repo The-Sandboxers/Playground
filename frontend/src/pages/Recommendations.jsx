@@ -79,9 +79,20 @@ export default function Recomendations() {
     }
   }
 
-  const handleThumbsDown = (liked_game_id) => {
-    setGameList(prevItems => prevItems.filter(game => game.igdb_id !== liked_game_id)); // Simply remove the game
-  };
+  async function handleThumbsDown(disliked_game_id){
+    const {success, data} = await requestBackend("POST", "http://127.0.0.1:5000/recs/disliked_game", "access", {"disliked_game_id": disliked_game_id})
+    try {
+      if (success) {
+        setGameList(prevItems => prevItems.filter(game => game.igdb_id !== disliked_game_id)); // Simply remove the game
+      }
+      else {
+        console.log('failed to thumbs down');
+        console.log(data);
+      }
+    } catch {
+      console.log("error thumbs downing")
+    }
+  }
 
   const [gameList, setGameList] = useState([null]); // the list of items
   const [currentIndex, setCurrentIndex] = useState(0); // current index in the list
