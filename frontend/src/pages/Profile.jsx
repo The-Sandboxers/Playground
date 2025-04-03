@@ -78,7 +78,9 @@ export default function Profile()
                         {/* Need to check if the played games length has at least length 1 */}
                         {playedGames.length ? (playedGamesData.map((element, index) => (
                             <div key={index} className="flex-shrink-0 w-32 h-43">  {/* Fixed width and height for images */}
+                                <a href={element.url} target="_blank">
                                 <img src={element.cover_url} alt={`Game cover ${index}`} className="object-cover w-full h-full rounded-md" />
+                                </a>
                             </div>
                         ))) : <div></div>}
                     </div>
@@ -91,7 +93,9 @@ export default function Profile()
                         {/* Need to check if the liked games length has at least length 1 */}
                         {likedGames.length ? (likedGamesData.map((element, index) => (
                             <div key={index} className="flex-shrink-0 w-32 h-43">  {/* Fixed width and height for images */}
-                                <img src={element.cover_url} alt={`Game cover ${index}`} className="object-cover w-full h-full rounded-md" />
+                                <a href={element.url} target="_blank">
+                                    <img src={element.cover_url} alt={`Game cover ${index}`} className="object-cover w-full h-full rounded-md" />
+                                </a>
                             </div>
                         ))) : <div></div>}
                     </div>
