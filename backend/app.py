@@ -12,16 +12,16 @@ import os
 import logging
 import redis
 from requests import post
+
 # import users table
 from models import db, User, UserGame
-
 
 app = Flask(__name__)
 app.config.from_object(ApplicationConfig)
 
 logging.basicConfig(level=logging.INFO)
-# Create database for app
 
+# Create database for app
 db.init_app(app)
 
 # JWT Config
@@ -40,6 +40,7 @@ bcrypt = Bcrypt(app)
 redis_client = redis.StrictRedis(host="redis", db=0, decode_responses=True)
 BLACKLISTED_TOKENS_KEY = "blacklisted_tokens"
 
+# Initialize Steam OpenID url and API key
 STEAM_OPENID_URL = "https://steamcommunity.com/openid/login"
 
 STEAM_API_KEY = app.config["STEAM_API_KEY"]
@@ -49,18 +50,18 @@ load_dotenv()
 ELASTIC_PASSWORD = os.getenv('ELASTIC_PASSWORD')
 es = Elasticsearch('http://playground-elasticsearch-1:9200', basic_auth=("elastic", ELASTIC_PASSWORD))
 
-
-
-@app.route('/test', methods=["GET"])
-def test_request():
-    pic_link = "https://cdn.pixabay.com/photo/2017/05/29/15/34/kitten-2354016_1280.jpg"
-    username = "Request worked"
-
-    return jsonify({
-        "username": username,
-        "profile_pic": pic_link
-    }), 200
-
+'''
+    Adds a new user to the User table.
+    
+    This POST route receives an email, password, and username from the request, 
+    verifies that the email and username do not already exist in the User table,
+    generates a password hash, and then adds that user's information
+    (email, username, password hash) to the User table.
+    
+    Returns:
+        Response: a json object with the new user's id, email, and username,
+        or an error message and code
+'''
 @app.route("/register", methods=["POST"])
 @jwt_required(optional=True)
 def register_user():
@@ -93,7 +94,19 @@ def register_user():
         "username": new_user.username
     }), 200
 
-# Login Route that requires user to be signed out    
+ 
+'''
+    Logs in to an existing user account.
+    
+    This POST route receives an username and password from the request, 
+    verifies that the email exists in the User table and that the
+    password matches that user's password hash, and then returns 
+    the access and refresh tokens for the user.
+    
+    Returns:
+        Response: a json object with the access and refresh tokens,
+        or an error message and code
+'''  
 @app.route("/login", methods=["POST"])
 def login_user():
     username = request.json.get("username")
@@ -116,7 +129,20 @@ def login_user():
         return jsonify({"error": "Username or password incorrect"}), 401
        
         
-
+'''
+    Loads game information from a user's profile.
+    
+    This GET route retrieves the username from the JWT, gets
+    that user's played and liked games from the UserGame table, 
+    grabs the information about those games from ElasticSearch, 
+    and returns all of the game information.
+    
+    Returns:
+        Response: a json object with the username, an array of played
+        game ids, an array of liked game ids, an array of full played game 
+        information (sources), and an array of full liked game information
+        (sources)
+'''  
 @app.route("/profile", methods=["GET"])
 @jwt_required()
 def user_profile():
@@ -138,12 +164,14 @@ def user_profile():
         result = es.search(index=index, query=query, fields=fields)
         
         for doc in result["hits"]["hits"]:
+            # load cover URL into ElasticSearch if it hasn't already been loaded
             if doc["_source"]["cover_url"]==None:
                 doc_id = doc["_id"]
                 cover_url = get_cover_url(doc["_source"]["igdb_id"])
                 doc["_source"]["cover_url"]=[cover_url]
                 es.update(index=index, id=doc_id, body={"doc":doc["_source"]})            
             
+            #TODO: should we add disliked games to this?
             # If game is liked append it to ids and list of sources    
             if game.liked_status == True:
                 liked_games_ids.append(game.igdb_id)
@@ -159,7 +187,14 @@ def user_profile():
                     "liked_games_sources": liked_games,
         }), 200
 
-
+'''
+    Logs out of a user's account.
+    
+    TODO Victor can you explain how this one works lol
+    
+    Returns:
+        Response: a json object with a success message and ...
+'''  
 @app.route("/logout", methods=["DELETE"])
 @jwt_required(verify_type=False)
 def logout_user():
@@ -171,22 +206,42 @@ def logout_user():
                     "token-type": ttype}), 200
 
 
-
+'''
+    Route to ?
+    
+    TODO Victor can you do this one too please
+    
+    Returns:
+        Response: ?
+'''  
 @jwt.token_in_blocklist_loader
 def check_if_token_blacklisted(jwt_header, jwt_payload:dict):
     jti = jwt_payload["jti"]
     token_in_redis = redis_client.get(jti)
     return token_in_redis is not None
 
-
-# route to verify if a token is valid, very lightweight and can be called by frontend
+'''
+    Route to verify if a token is valid.
+    
+    TODO Victor I am scared of JWT
+    
+    Returns:
+        Response: 
+'''  
 @app.route("/verify-token", methods=["GET"])
 @jwt_required()
 def verify_token():
     identity = get_jwt_identity()
     return jsonify(logged_in_as=identity), 200
 
-# route to refresh access token
+'''
+    Route to refresh access token.
+    
+    TODO Victor
+    
+    Returns:
+        Response: 
+'''  
 @app.route("/refresh", methods=["POST"])
 @jwt_required(refresh=True)
 def refresh():
@@ -194,7 +249,14 @@ def refresh():
     access_token = create_access_token(identity=identity)
     return jsonify(access_token=access_token)
 
-
+'''
+    Route to connect Steam to ...?
+    
+    TODO Victor
+    
+    Returns:
+        Response: 
+'''  
 @app.route("/profile/connect_steam", methods=["GET"])
 @jwt_required()
 def connect_steam():
@@ -208,6 +270,14 @@ def connect_steam():
     }
     return redirect(f"{STEAM_OPENID_URL}?{urlencode(params)}")
 
+'''
+    Route to ?
+
+    TODO Victor
+    
+    Returns:
+        Response: 
+'''  
 @app.route("/profile/steam/callback", methods=["POST"])
 @jwt_required()
 def steam_auth_callback():
@@ -227,7 +297,17 @@ def steam_auth_callback():
     return jsonify({"message": "Steam account linked successfully"}), 200
     
 
-# Route to add games to a user's profile manually
+'''
+    Manually adds a list of games to the user's played games.
+    
+    This POST route retrieves the username from the JWT and a list of 
+    added games from the json request and adds those games to the 
+    UserGame table with the user's user id and played_status True.
+    
+    Returns:
+        Response: a json object with the username and the array of games
+        added to the UserGames table
+'''  
 @app.route("/profile/add_games", methods=["POST"])
 @jwt_required()
 def add_games():
@@ -237,6 +317,7 @@ def add_games():
         games_list = request.json.get("added_games")
         added_games = []
         for game_id in games_list:
+            # check that game does not already have a record for this user
             if UserGame.query.filter_by(user_id=user.id, igdb_id=game_id).first() is None:
                 new_added_game = UserGame(igdb_id=game_id, user_id=user.id, played_status=True)
                 db.session.add(new_added_game)
@@ -246,7 +327,16 @@ def add_games():
     except:
         return jsonify(error="Error adding games"), 500
 
-# route to check the health of the elasticsearch cluster
+'''
+    Checks the health of the ElasticSearch cluster.
+    
+    This GET route retrieves the health status of the ElasticSearch cluster.
+    
+    Returns:
+        Response: see ElasticSearch documentation:
+        https://www.elastic.co/guide/en/elasticsearch/reference/current/cluster-health.html#response_body
+
+'''  
 @app.route("/elasticsearch/health", methods=["GET"])
 def es_health():
     result = es.cluster.health(
@@ -255,7 +345,15 @@ def es_health():
     return jsonify(result.body)
 
 
-# route to return information for a hard-coded example game
+'''
+    Returns information for a hard-coded example game.
+    
+    This GET route grabs the ElasticSearch data for an example
+    game and returns it. 
+    
+    Returns:
+        Response: a json object with the game's information
+'''  
 @app.route("/games/example_game", methods=["GET"])
 def example_game():
     game_id = 11198
@@ -272,7 +370,16 @@ def example_game():
     except:
         return jsonify(error="Error getting game info"), 500
 
-# route to return game information for a given igdb id
+'''
+    Returns game information for a given IGDB id.
+    
+    This GET route retrieves the game's IGDB id from the json
+    request and uses this to find the game's information in
+    ElasticSearch and return it.
+    
+    Returns:
+        Response: a json object with the game's information
+'''  
 @app.route("/games/game_info", methods=["GET"])
 def game_info():
     game_id = request.args.get("igdb_id")
@@ -291,7 +398,17 @@ def game_info():
         return jsonify(error="Error getting game info"), 500
 
 
-
+'''
+    Searches for games based on inputted query.
+    
+    This GET route retrieves the search query from the request's
+    arguments and searches ElasticSearch for the best matches, returning
+    a list of up to 5.
+    
+    Returns:
+        Response: a json object with an array of the game information
+        of the games with names best matching the query string
+'''  
 @app.route("/games/search", methods=["GET"])
 def search_games():
     search_term = request.args.get("search_term")
@@ -303,21 +420,30 @@ def search_games():
                 "name": search_term
             }
         }
-        # result = es.search(index=index, query=query, fields=fields, size=5)
         result = es.search(index=index, query=query, size=5)
         result_games = []
         for doc in result["hits"]["hits"]:
+            # load cover URL into ElasticSearch if it hasn't already been loaded
             if doc["_source"]["cover_url"]==None:
                 doc_id = doc["_id"]
                 cover_url = get_cover_url(doc["_source"]["igdb_id"])
                 doc["_source"]["cover_url"]=[cover_url]
                 es.update(index=index, id=doc_id, body={"doc":doc["_source"]})
             result_games.append(doc["_source"])
-        # conversion ensures unique items but compatibility with jsonify()
         return jsonify(result=result_games)
     except Exception as e:
         return jsonify(error=f"Error getting search results:\n{e}"), 500
 
+'''
+    Gets a random game from the ElasticSearch database
+    
+    This GET route uses the function_score ElasticSearch query with
+    a random score to return the information for a random game.
+    
+    Returns:
+        Response: a json object with the game information for the 
+        randomly chosen game
+'''  
 @app.route("/games/random_game", methods=["GET"])
 def random_game():
     index="games"
@@ -341,7 +467,19 @@ def random_game():
         return jsonify(error="Error getting random game"), 500
 
 
-# TO-DO: Finish Implemnting load steam games 
+'''
+    Loads games from Steam into a user's profile.
+    
+    This POST route retrieves the user's Steam ID from their profile,
+    uses this to get a list of their owned games from the Steam API,
+    converts the Steam IDs of these games to IGDB IDs, filters the
+    games to the ones that exist in the ElasticSearch database, and
+    then adds the final list to the UserGame table.
+    
+    Returns:
+        Response: a json object with an array of IGDB ids of the
+        games that were successfully added to the user's profile
+'''  
 @app.route("/profile/load_games_steam", methods=["POST"])
 @jwt_required()
 def load_games_from_steam():
@@ -353,6 +491,7 @@ def load_games_from_steam():
         # Get user's games from steam via steam id
         owned_steam_ids = get_owned_steam_game_ids(user_steamid, STEAM_API_KEY)
         print(f"Owned Games:{owned_steam_ids}")
+
         # Convert steam ids to igdb ids
         igdb_games = get_igdb_ids(owned_steam_ids)
         
@@ -380,20 +519,30 @@ def load_games_from_steam():
                 db.session.add(new_added_game)
                 db.session.commit()
                 added_games.append(game_id)
-        # conversion ensures unique items but compatibility with jsonify()
         return jsonify(added_games)
     except Exception as e:
         return jsonify(error=e), 500
+
+'''
+    Loads recommendations based on a user's profile.
     
+    This POST route retrieves the user's played games, ...
+
+    TODO: update this after merging in branch
+    
+    Returns:
+        Response: a json object with an array of the game information
+        for the recommended games.
+'''  
 @app.route("/recs/load_recs", methods=["POST"])
 @jwt_required()
-# parameter played_games: list of igdb_ids
 def recommendation_algorithm():
     games_list = request.json.get("curr_games_list")
     username = get_jwt_identity()
     user = User.query.filter_by(username=username).first()
     played_games = []
     
+    # get the user's played games
     for game in UserGame.query.filter_by(user_id=user.id).all():
         played_games.append(game.igdb_id)
 
@@ -451,6 +600,7 @@ def recommendation_algorithm():
     result = es.search(index=index, query=query, size=10)
     doc_games = []
     for doc in result["hits"]["hits"]:
+    # load cover URL into ElasticSearch if it hasn't already been loaded    
         if doc["_source"]["cover_url"]==None:
             doc_id = doc["_id"]
             cover_url = get_cover_url(doc["_source"]["igdb_id"])
@@ -458,7 +608,6 @@ def recommendation_algorithm():
             es.update(index=index, id=doc_id, body={"doc":doc["_source"]})
         doc_games.append(doc["_source"])
     return jsonify(doc_games)
-
 
 
 @app.route("/recs/liked_game", methods=["POST"])
