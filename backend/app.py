@@ -414,10 +414,16 @@ def recommendation_algorithm():
             dict_item = {}
             dict_item["_id"]=doc_id
             query_docs.append(dict_item)
+
+
+    # Get disliked games from the user's profile
+    disliked_games=[]
+    for game in UserGame.query.filter_by(user_id=user.id, disliked_status=True).all():
+        disliked_games.append(game.igdb_id)
+
+    # Grab ElasticSearch docs for disliked games
     unlike_docs = []
-    # Get unlike games:
-    # TODO get disliked games from the user's profile ?
-    for game_id in games_list:
+    for game_id in disliked_games:
         query_unlike={
             "match":{
                 "igdb_id": game_id
