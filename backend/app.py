@@ -188,12 +188,13 @@ def user_profile():
         }), 200
 
 '''
-    Logs out of a user's account.
+    Logs out of a user's account, by deleting their received session tokens.
     
-    TODO Victor can you explain how this one works lol
+    This DELETE route receives a token and blacklists the token from Redis.
+    This route must be called individually per token.
     
     Returns:
-        Response: a json object with a success message and ...
+        Response: a json object with a success message and the token type deleted.
 '''  
 @app.route("/logout", methods=["DELETE"])
 @jwt_required(verify_type=False)
@@ -207,12 +208,7 @@ def logout_user():
 
 
 '''
-    Route to ?
-    
-    TODO Victor can you do this one too please
-    
-    Returns:
-        Response: ?
+    Checks if the tokens are blacklisted.
 '''  
 @jwt.token_in_blocklist_loader
 def check_if_token_blacklisted(jwt_header, jwt_payload:dict):
