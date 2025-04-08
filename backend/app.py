@@ -414,10 +414,16 @@ def recommendation_algorithm():
             dict_item = {}
             dict_item["_id"]=doc_id
             query_docs.append(dict_item)
+
+
+    # Get disliked games from the user's profile
+    disliked_games=[]
+    for game in UserGame.query.filter_by(user_id=user.id, disliked_status=True).all():
+        disliked_games.append(game.igdb_id)
+
+    # Grab ElasticSearch docs for disliked games
     unlike_docs = []
-    # Get unlike games:
-    # TODO get disliked games from the user's profile ?
-    for game_id in games_list:
+    for game_id in disliked_games:
         query_unlike={
             "match":{
                 "igdb_id": game_id
@@ -453,41 +459,77 @@ def recommendation_algorithm():
         doc_games.append(doc["_source"])
     return jsonify(doc_games)
 
+
+
 @app.route("/recs/liked_game", methods=["POST"])
 @jwt_required()
 def add_liked_game():
+    '''
+    Adds/updates UserGame table with game with liked_status true.
+    
+    This POST route receieves an id from the request, checks if the game exists in the UserGame table
+    and adds it to the table if it does not exist with the liked_status set to true.
+    If game exists, updates liked_status of game to true, and disliked to false.
+    
+    Returns:
+        Response: a json object verifying whether a success occurred.
+    '''
     liked_game_id = request.json.get("liked_game_id")
     username = get_jwt_identity()
     user = User.query.filter_by(username=username).first()
-    
+    message = ""
     # Checks if game already exists in user's profile
-    game_exists = UserGame.query.filter_by(user_id = user.id, igdb_id = liked_game_id).first() is not None
-    if game_exists:
-        return jsonify({"error": "Game already in likes"}), 406
-
-    new_added_game = UserGame(user_id=user.id, igdb_id = liked_game_id, liked_status = True)
-    db.session.add(new_added_game)
-    db.session.commit()
+    game = UserGame.query.filter_by(user_id = user.id, igdb_id = liked_game_id).first()
+    if game is not None:
+        # updates game liked and disliked status if game exists
+        game.liked_status = True
+        game.disliked_status = False
+        db.session.commit()
+        message = f"Game: {liked_game_id}, updated with liked status true."
+    else:
+        # creates new game with liked_status true (all boolean fields automatically false)
+        new_added_game = UserGame(user_id=user.id, igdb_id = liked_game_id, liked_status = True)
+        db.session.add(new_added_game)
+        db.session.commit()    
+        message = f"New Game: {liked_game_id}, created with liked_status true."
     
-    return jsonify({"success":True}),200
+    return jsonify({"success":True,
+                    "message": message}),200
 
 @app.route("/recs/disliked_game", methods=["POST"])
 @jwt_required()
 def add_disliked_game():
+    '''
+    Adds/updates UserGame table with game with disliked_status true.
+    
+    This POST route receieves an id from the request, checks if the game exists in the UserGame table
+    and adds it to the table if it does not exist with the disliked_status set to true.
+    If game exists, updates liked_status of game to false, and disliked to true.
+    
+    Returns:
+        Response: a json object verifying whether a success occurred.
+    '''
     disliked_game_id = request.json.get("disliked_game_id")
     username = get_jwt_identity()
     user = User.query.filter_by(username=username).first()
-    
+    message = ""
     # Checks if game already exists in user's profile
-    game_exists = UserGame.query.filter_by(user_id = user.id, igdb_id = disliked_game_id).first() is not None
-    if game_exists:
-        return jsonify({"error": "Game already in likes"}), 406
-
-    new_added_game = UserGame(user_id=user.id, igdb_id = disliked_game_id, disliked_status = True)
-    db.session.add(new_added_game)
-    db.session.commit()
+    game = UserGame.query.filter_by(user_id = user.id, igdb_id = disliked_game_id).first()
+    if game is not None:
+        # updates game liked and disliked status if game exists
+        game.liked_status = False
+        game.disliked_status = True
+        db.session.commit()
+        message = f"Game: {disliked_game_id}, updated with disliked status true."
+    else:
+        # creates new game with liked_status true (all boolean fields automatically false)
+        new_added_game = UserGame(user_id=user.id, igdb_id = disliked_game_id, disliked_status = True)
+        db.session.add(new_added_game)
+        db.session.commit()    
+        message = f"New Game: {disliked_game_id}, created with disliked_status true."
     
-    return jsonify({"success":True}),200
+    return jsonify({"success":True,
+                    "message": message}),200
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
