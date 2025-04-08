@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { FaRegThumbsUp, FaRegThumbsDown } from 'react-icons/fa6';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { requestBackend, steamAuth, redirectBack } from '../utils';
@@ -60,9 +61,46 @@ export default function Profile()
         }
     }
 
+    async function removePlayedGame(gameData, index) {
+        try {
+            const data = {"played_game_id": gameData.igdb_id};
+            const {success, response} = await requestBackend("POST", "http://127.0.0.1:5000/recs/remove_played_game", "access", data);
+            if (success) {
+                likedGamesData.removeItem(index)
+            }
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    async function likeGame(gameData) {
+        try {
+            const data = {"liked_game_id": gameData.igdb_id};
+            console.log(data)
+            const {success, response} = await requestBackend("POST", "http://127.0.0.1:5000/recs/liked_game", "access", data);
+            if (success) {
+                likedGamesData.unshift(gameData)
+            }
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    async function dislikeGame(gameData) {
+        try {
+            const data = {"disliked_game_id": gameData.igdb_id};
+            const {success, response} = await requestBackend("POST", "http://127.0.0.1:5000/recs/disliked_game", "access", data);
+            if (success) {
+
+            }
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
 
     return (
-        <div className="mt-18 grid grid-flow-col grid-rows-3 grid-cols-5 gap-4 p-5 font-black text-gray-200 text-2xl">
+        <div className="grid grid-flow-col grid-rows-3 grid-cols-5 gap-4 p-5 font-black text-gray-200 text-2xl">
             <div className="col-span-2 row-span-3 rounded-lg bg-card-foreground p-5">
                 <h3>{username}</h3>
                 <img src={profilePic} className="rounded-full mx-auto" />
@@ -77,8 +115,11 @@ export default function Profile()
                     <div className="grid grid-cols-6 gap-4">
                         {/* Need to check if the played games length has at least length 1 */}
                         {playedGames.length ? (playedGamesData.map((element, index) => (
-                            <div key={index} className="flex-shrink-0 w-32 h-43">  {/* Fixed width and height for images */}
+                            <div key={index} className="relative group flex-shrink-0 w-32 h-43">  {/* Fixed width and height for images */}
                                 <img src={element.cover_url} alt={`Game cover ${index}`} className="object-cover w-full h-full rounded-md" />
+                                <Button className="absolute top-2 left-2 hidden group-hover:block bg-red-500 text-white px-2 py-1 rounded-md" onClick={() => removePlayedGame(element, index)}>X</Button>
+                                <FaRegThumbsDown className="absolute bottom-2 left-2 hidden group-hover:block bg-red-500 text-white px-2 py-1 rounded-md" onClick={() => dislikeGame(element)}/>
+                                <FaRegThumbsUp className="absolute bottom-2 right-2 hidden group-hover:block bg-green-500 text-white px-2 py-1 rounded-md" onClick={() => likeGame(element)}/>
                             </div>
                         ))) : <div></div>}
                     </div>
@@ -90,8 +131,8 @@ export default function Profile()
                     <div className="grid grid-cols-6 gap-4">
                         {/* Need to check if the liked games length has at least length 1 */}
                         {likedGames.length ? (likedGamesData.map((element, index) => (
-                            <div key={index} className="flex-shrink-0 w-32 h-43">  {/* Fixed width and height for images */}
-                                <img src={element.cover_url} alt={`Game cover ${index}`} className="object-cover w-full h-full rounded-md" />
+                            <div key={index} className="relative group flex-shrink-0 w-32 h-43">  {/* Fixed width and height for images */}
+                                <img src={element.cover_url} alt={`Game cover ${index}`} className="object-cover w-full h-full rounded-md"/>
                             </div>
                         ))) : <div></div>}
                     </div>
