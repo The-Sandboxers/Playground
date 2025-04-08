@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaRegThumbsUp, FaRegThumbsDown } from 'react-icons/fa6';
+import { FaRegThumbsUp, FaRegThumbsDown, FaXmark } from 'react-icons/fa6';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { requestBackend, steamAuth, redirectBack } from '../utils';
@@ -76,10 +76,9 @@ export default function Profile()
     async function likeGame(gameData) {
         try {
             const data = {"liked_game_id": gameData.igdb_id};
-            console.log(data)
-            const {success, response} = await requestBackend("POST", "http://127.0.0.1:5000/recs/liked_game", "access", data);
+            const {success, message} = await requestBackend("POST", "http://127.0.0.1:5000/recs/liked_game", "access", data);
             if (success) {
-                likedGamesData.unshift(gameData)
+
             }
         } catch (error) {
             console.log(error)
@@ -119,9 +118,9 @@ export default function Profile()
                                 <a href={element.url} target="_blank">
                                 <img src={element.cover_url} alt={`Game cover ${index}`} className="object-cover w-full h-full rounded-md" />
                                 </a>
-                                <Button className="absolute top-2 left-2 hidden group-hover:block bg-red-500 text-white px-2 py-1 rounded-md" onClick={() => removePlayedGame(element, index)}>X</Button>
-                                <FaRegThumbsDown className="absolute bottom-2 left-2 hidden group-hover:block bg-red-500 text-white px-2 py-1 rounded-md" onClick={() => dislikeGame(element)}/>
-                                <FaRegThumbsUp className="absolute bottom-2 right-2 hidden group-hover:block bg-green-500 text-white px-2 py-1 rounded-md" onClick={() => likeGame(element)}/>
+                                <FaXmark className="absolute top-2 left-2 hidden group-hover:block bg-red-500 text-white px-2 py-1 rounded-md text-2xl cursor-pointer" onClick={() => removePlayedGame(element, index)} title="Remove game"/>
+                                <FaRegThumbsDown className="absolute bottom-2 left-2 hidden group-hover:block bg-red-500 text-white px-2 py-1 rounded-md text-3xl cursor-pointer" onClick={() => dislikeGame(element)} title="Dislike game"/>
+                                <FaRegThumbsUp className="absolute bottom-2 right-2 hidden group-hover:block bg-green-500 text-white px-2 py-1 rounded-md text-3xl cursor-pointer" onClick={() => likeGame(element)} title="Like game"/>
                             </div>
                         ))) : <div></div>}
                     </div>
