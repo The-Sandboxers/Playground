@@ -2,6 +2,7 @@ import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup"
 import * as yup from "yup"
 
+import { useNavigate} from 'react-router-dom';
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -56,17 +57,29 @@ export default function RegistrationForm ({
         },
   });
 
+  const navigate = useNavigate();
   const [registrationStatus, setRegistrationStatus] = useState(logInErrors.DEFAULT);
 
   
   const onSubmit = async (signUpData) => {
     try {
       // Send POST request to the backend
+      console.log(signUpData)
       const { success, data } = await requestBackend("POST", "http://127.0.0.1:5000/register", "None", signUpData)
       // If response ok, registration successful
       if(success){
         console.log("Registration Succesful",data)
         setRegistrationStatus("successful")
+
+        // get the user logged in so we can navigate to profile
+        const loginData = {"username": signUpData.username, "password": signUpData.password};
+        const response = await requestBackend("POST", "http://127.0.0.1:5000/login", "None", loginData)
+        if(response.success){
+          localStorage.setItem("access_token", response.data.access_token)
+          localStorage.setItem("refresh_token", response.data.refresh_token)
+          navigate("/application/profile");
+        }
+        
       }else{
         // If response not ok, but received, notify user of error
         console.log("Registration unsuccessful: ", data)

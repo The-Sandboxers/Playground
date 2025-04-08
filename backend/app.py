@@ -238,7 +238,7 @@ def add_games():
         added_games = []
         for game_id in games_list:
             if UserGame.query.filter_by(user_id=user.id, igdb_id=game_id).first() is None:
-                new_added_game = UserGame(igdb_id=game_id, user_id=user.id)
+                new_added_game = UserGame(igdb_id=game_id, user_id=user.id, played_status=True)
                 db.session.add(new_added_game)
                 db.session.commit()
                 added_games.append(game_id)
