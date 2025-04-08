@@ -219,10 +219,11 @@ def check_if_token_blacklisted(jwt_header, jwt_payload:dict):
 '''
     Route to verify if a token is valid.
     
-    TODO Victor I am scared of JWT
+    This GET route gets the user's JWT identity from a token (usually access token),
+    and returns the username and a success if their token exists and isn't blacklisted.
     
     Returns:
-        Response: 
+        Response: a json object with the username and 200 success.
 '''  
 @app.route("/verify-token", methods=["GET"])
 @jwt_required()
@@ -233,46 +234,31 @@ def verify_token():
 '''
     Route to refresh access token.
     
-    TODO Victor
+    This POST route takes a user's refresh token and
+    returns a newly generated access token if the refresh token is valid.
     
     Returns:
-        Response: 
+        Response: a json object with an access token and 200 success.
 '''  
 @app.route("/refresh", methods=["POST"])
 @jwt_required(refresh=True)
 def refresh():
     identity = get_jwt_identity()
     access_token = create_access_token(identity=identity)
-    return jsonify(access_token=access_token)
+    return jsonify(access_token=access_token), 200
+
+
 
 '''
-    Route to connect Steam to ...?
+    Route to get user's steam id from steam auth.
     
-    TODO Victor
-    
-    Returns:
-        Response: 
-'''  
-@app.route("/profile/connect_steam", methods=["GET"])
-@jwt_required()
-def connect_steam():
-    params = {
-        "openid.ns": "http://specs.openid.net/auth/2.0",
-        "openid.mode": "checkid_setup",
-        "openid.return_to": url_for("steam_auth_callback", _external=True),
-        "openid.realm": request.host_url,
-        "openid.identity": "http://specs.openid.net/auth/2.0/identifier_select",
-        "openid.claimed_id": "http://specs.openid.net/auth/2.0/identifier_select"
-    }
-    return redirect(f"{STEAM_OPENID_URL}?{urlencode(params)}")
+    Route only called after frontend accesses steam OpenID,
+    Receives request from frontend with OpenID info, verifies request and gets steam_id
+    Registers steam id to the user's steam_id field in postgres
+    Returns a message and 200 success if successful.
 
-'''
-    Route to ?
-
-    TODO Victor
-    
     Returns:
-        Response: 
+        Response: a json object with a message and 200 success.
 '''  
 @app.route("/profile/steam/callback", methods=["POST"])
 @jwt_required()
