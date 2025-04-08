@@ -9,12 +9,15 @@ import Recommendations from './pages/Recommendations.jsx'
 import Home from './pages/Home.jsx'
 import Login from "./pages/Login.jsx"
 import AuthWrapper from './layouts/AuthWrapper'
+import HomeAuthWrapper from './layouts/HomeAuthWrapper'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Home/>}/>
+        <Route element={<HomeAuthWrapper/>}>
+          <Route path="/" element={<Home/>}/>
+        </Route>
         <Route element={<AuthWrapper/>}>
           <Route path="/application" element={<App/>}>
             <Route index element={<Navigate to="recs" replace/>} />
