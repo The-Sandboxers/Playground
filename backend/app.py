@@ -238,7 +238,7 @@ def add_games():
         added_games = []
         for game_id in games_list:
             if UserGame.query.filter_by(user_id=user.id, igdb_id=game_id).first() is None:
-                new_added_game = UserGame(igdb_id=game_id, user_id=user.id)
+                new_added_game = UserGame(igdb_id=game_id, user_id=user.id, played_status=True)
                 db.session.add(new_added_game)
                 db.session.commit()
                 added_games.append(game_id)
@@ -483,7 +483,7 @@ def add_disliked_game():
     if game_exists:
         return jsonify({"error": "Game already in likes"}), 406
 
-    new_added_game = UserGame(user_id=user.id, igdb_id = disliked_game_id, liked_status = True)
+    new_added_game = UserGame(user_id=user.id, igdb_id = disliked_game_id, disliked_status = True)
     db.session.add(new_added_game)
     db.session.commit()
     

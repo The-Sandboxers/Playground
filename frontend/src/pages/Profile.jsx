@@ -116,7 +116,9 @@ export default function Profile()
                         {/* Need to check if the played games length has at least length 1 */}
                         {playedGames.length ? (playedGamesData.map((element, index) => (
                             <div key={index} className="relative group flex-shrink-0 w-32 h-43">  {/* Fixed width and height for images */}
+                                <a href={element.url} target="_blank">
                                 <img src={element.cover_url} alt={`Game cover ${index}`} className="object-cover w-full h-full rounded-md" />
+                                </a>
                                 <Button className="absolute top-2 left-2 hidden group-hover:block bg-red-500 text-white px-2 py-1 rounded-md" onClick={() => removePlayedGame(element, index)}>X</Button>
                                 <FaRegThumbsDown className="absolute bottom-2 left-2 hidden group-hover:block bg-red-500 text-white px-2 py-1 rounded-md" onClick={() => dislikeGame(element)}/>
                                 <FaRegThumbsUp className="absolute bottom-2 right-2 hidden group-hover:block bg-green-500 text-white px-2 py-1 rounded-md" onClick={() => likeGame(element)}/>
@@ -131,8 +133,8 @@ export default function Profile()
                     <div className="grid grid-cols-6 gap-4">
                         {/* Need to check if the liked games length has at least length 1 */}
                         {likedGames.length ? (likedGamesData.map((element, index) => (
-                            <div key={index} className="relative group flex-shrink-0 w-32 h-43">  {/* Fixed width and height for images */}
-                                <img src={element.cover_url} alt={`Game cover ${index}`} className="object-cover w-full h-full rounded-md"/>
+                            <div key={index} className="flex-shrink-0 w-32 h-43">  {/* Fixed width and height for images */}
+                                <img src={element.cover_url} alt={`Game cover ${index}`} className="object-cover w-full h-full rounded-md" />
                             </div>
                         ))) : <div></div>}
                     </div>
