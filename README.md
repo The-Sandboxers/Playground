@@ -23,9 +23,13 @@ A better recommendation system for gamers! Built by [Nick Carrino](https://githu
 1. Install the necessary software:
     * [Git](https://git-scm.com/downloads) and [Git LFS](https://git-lfs.com/)
     * [Docker Desktop](https://docs.docker.com/get-started/introduction/get-docker-desktop/)
-2. [Clone the repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) to your local machine
+2. [Clone the repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) to your local machine:
+```
+git clone https://github.com/The-Sandboxers/Playground.git
+```
 3. In the project directory, create a file named ```.env``` for storing secrets. Please contact the Playground team for the contents of this file.
-4. In the project directory, run the command ```docker compose up``` to start the project containers.
+4. In the project directory, run the command ```
+docker compose up``` to start the project containers.
 5. Navigate to [http://localhost:5173](http://localhost:5173) to access the front end of the project.
 6. To shut down the project containers, run ```docker compose down```.
 
