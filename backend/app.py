@@ -229,6 +229,30 @@ def steam_auth_callback():
     return jsonify({"message": "Steam account linked successfully"}), 200
     
 
+
+
+@app.route("/profile/remove_steam_id", methods=["DELETE"])
+@jwt_required()
+def remove_steam_id():
+    """
+    Removes user's steam id from their profile.
+    
+    This DELETE Route when called, checks if the user's steam_id field in postgres is not NULL.
+    If not null, sets steam_id field to null, and returns a message of confirmation as well as their now none steamid
+
+    Returns:
+        Response: a JSON object containing a message and a status code.
+    """
+    user = get_jwt_identity()
+    if not user.steam_id:
+        return jsonify(message="User steam id does not exist"), 401
+    
+    user.steam_id = None
+    db.session.commit()
+    
+    return jsonify({"message":"Steam id removed from profile",
+                    "steamid" : user.steam_id}), 200
+
 # Route to add games to a user's profile manually
 @app.route("/profile/add_games", methods=["POST"])
 @jwt_required()
