@@ -148,6 +148,7 @@ def login_user():
 def user_profile():
     username = get_jwt_identity()
     user = User.query.filter_by(username=username).first()
+    steam_id_exists = user.steam_id is not None
     played_games_ids = []
     played_games = []
     liked_games_ids = []
@@ -185,6 +186,7 @@ def user_profile():
                     "liked_games": liked_games_ids,
                     "played_games_sources": played_games,
                     "liked_games_sources": liked_games,
+                    "steam_id_exists": steam_id_exists,
         }), 200
 
 '''
@@ -278,6 +280,28 @@ def steam_auth_callback():
     db.session.commit()
     return jsonify({"message": "Steam account linked successfully"}), 200
     
+
+@app.route("/profile/remove_steam_id", methods=["DELETE"])
+@jwt_required()
+def remove_steam_id():
+    """
+    Removes user's steam id from their profile.
+    
+    This DELETE Route when called, checks if the user's steam_id field in postgres is not NULL.
+    If not null, sets steam_id field to null, and returns a message of confirmation as well as their now none steamid
+
+    Returns:
+        Response: a JSON object containing a message and a status code.
+    """
+    user = get_jwt_identity()
+    if not user.steam_id:
+        return jsonify(message="User steam id does not exist"), 401
+    
+    user.steam_id = None
+    db.session.commit()
+    
+    return jsonify({"message":"Steam id removed from profile",
+                    "steamid" : user.steam_id}), 200
 
 '''
     Manually adds a list of games to the user's played games.
