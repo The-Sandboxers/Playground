@@ -28,8 +28,7 @@ A better recommendation system for gamers! Built by [Nick Carrino](https://githu
 git clone https://github.com/The-Sandboxers/Playground.git
 ```
 3. In the project directory, create a file named ```.env``` for storing secrets. Please contact the Playground team for the contents of this file.
-4. In the project directory, run the command ```
-docker compose up``` to start the project containers.
+4. In the project directory, run the command  ```docker compose up``` to start the project containers.
 5. Navigate to [http://localhost:5173](http://localhost:5173) to access the front end of the project.
 6. To shut down the project containers, run ```docker compose down```.
 
