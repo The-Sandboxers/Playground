@@ -122,6 +122,7 @@ def login_user():
 def user_profile():
     username = get_jwt_identity()
     user = User.query.filter_by(username=username).first()
+    steam_id_exists = user.steam_id is not None
     played_games_ids = []
     played_games = []
     liked_games_ids = []
@@ -157,6 +158,7 @@ def user_profile():
                     "liked_games": liked_games_ids,
                     "played_games_sources": played_games,
                     "liked_games_sources": liked_games,
+                    "steam_id_exists": steam_id_exists,
         }), 200
 
 
