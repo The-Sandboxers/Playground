@@ -293,15 +293,21 @@ def remove_steam_id():
     Returns:
         Response: a JSON object containing a message and a status code.
     """
-    user = get_jwt_identity()
-    if not user.steam_id:
-        return jsonify(message="User steam id does not exist"), 401
+    try:
+        username = get_jwt_identity()
+        user = User.query.filter_by(username=username).first()
+        if not user.steam_id:
+            return jsonify(message="User steam id does not exist"), 401
     
-    user.steam_id = None
-    db.session.commit()
+        user.steam_id = None
+        db.session.commit()
     
-    return jsonify({"message":"Steam id removed from profile",
+        return jsonify({"message":"Steam id removed from profile",
                     "steamid" : user.steam_id}), 200
+    except Exception as e:
+        return jsonify({"message" : str(e)}), 401
+
+
 
 '''
     Manually adds a list of games to the user's played games.

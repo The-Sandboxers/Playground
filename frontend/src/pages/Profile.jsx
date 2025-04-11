@@ -14,6 +14,7 @@ export default function Profile()
     const [playedGames, setPlayedGames] = useState("");
     const [playedGamesData, setPlayedGamesData] = useState([]);
     const [likedGamesData, setLikedGamesData] = useState([]);
+    const [hasSteamID, setHasSteamID] = useState(false);
 
 
     useEffect(() => {
@@ -27,6 +28,7 @@ export default function Profile()
                     setPlayedGames(data.played_games);
                     setPlayedGamesData(data.played_games_sources);
                     setLikedGamesData(data.liked_games_sources);
+                    setHasSteamID(data.steam_id_exists);
                 }
                 
             } catch (error) {
@@ -50,14 +52,22 @@ export default function Profile()
         }
     }
 
-    async function steamAuthenticate() {
-        try {
-            await steamAuth()
-            await redirectBack()
-            const{success,data} = await requestBackend("POST", "http://127.0.0.1:5000/profile/load_games_steam")
-    
-        } catch (error) {
-            console.log(error);
+    async function steamToggle() {
+        // If they have steam it removes it, if they don't have steam then it connects them to steam
+        if (!hasSteamID) {
+            try {
+                await steamAuth()
+                await redirectBack()
+                const { success, data } = await requestBackend("POST", "http://127.0.0.1:5000/profile/load_games_steam")
+                setHasSteamID(true);
+            } catch (error) {
+                console.log(error);
+            }
+        } else {
+            console.log('removing steam')
+            const {data, code} = await requestBackend("DELETE", "http://127.0.0.1:5000/profile/remove_steam_id");
+            console.log(code);
+                setHasSteamID(false);
         }
     }
 
@@ -106,7 +116,7 @@ export default function Profile()
                 
                 <Button size="lg" variant="secondary" className="font-black text-md mb-4" onClick={signOut}>Sign Out</Button>
                 <h3 className="mb-4">Linked Services:</h3>
-                <Button size="lg" variant="secondary" className="font-black text-md mb-4" onClick={steamAuthenticate}>Connect to Steam</Button>
+                <Button size="lg" variant="secondary" className="font-black text-md mb-4" onClick={steamToggle}>{hasSteamID ? 'Disconnect from Steam' : 'Connect to Steam'}</Button>
             </div>
             <div className="col-span-3 rounded-lg bg-foreground p-5">
                 <p className="mb-4">Played Games</p>
