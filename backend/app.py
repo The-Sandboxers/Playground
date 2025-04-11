@@ -7,7 +7,7 @@ from config import ApplicationConfig
 from urllib.parse import urlencode
 from elasticsearch import Elasticsearch
 from dotenv import load_dotenv
-from helpers import get_owned_steam_game_ids, get_cover_url, get_igdb_ids, verify_open_id
+from helpers import get_owned_steam_game_ids, get_cover_url, get_igdb_ids, verify_open_id, get_platform_names
 import os
 import logging
 import redis
@@ -333,6 +333,35 @@ def add_games():
     except:
         return jsonify(error="Error adding games"), 500
 
+
+
+'''
+    TODO: finish writing this comment
+    
+    This POST route retrieves the username from the JWT and a list
+    of dictionary items of the platform statuses, ...
+    
+    Returns:
+        Response: 
+'''  
+@app.route("/profile/edit_platforms", methods=["POST"])
+@jwt_required()
+def edit_platforms():
+    try:
+        username = get_jwt_identity()
+        user = User.query.filter_by(username=username).first()
+        platforms_list = request.json.get("platforms")
+        print(type(platforms_list))
+        
+        for platform_pair in platforms_list:
+            platform = list(platform_pair.keys())[0]
+            platform_value = list(platform_pair.values())[0]
+            # TODO: commit this information to postgres
+
+        return jsonify(error="Not implemented yet"), 500
+    except:
+        return jsonify(error="Error editing platforms"), 500
+
 '''
     Checks the health of the ElasticSearch cluster.
     
@@ -591,7 +620,11 @@ def recommendation_algorithm():
             dict_item = {}
             dict_item["_id"]=doc_id
             unlike_docs.append(dict_item)
-            
+
+    # TODO: Get the user's chosen platforms from their profile
+    # create a list of platforms that the user does actually have
+    user_platforms = []
+
     query ={
         "more_like_this" : {
         "fields" : ["keywords"],
@@ -606,7 +639,9 @@ def recommendation_algorithm():
     result = es.search(index=index, query=query, size=10)
     doc_games = []
     for doc in result["hits"]["hits"]:
-    # load cover URL into ElasticSearch if it hasn't already been loaded    
+    # load cover URL into ElasticSearch if it hasn't already been loaded
+        # TODO: check for platforms matching user platforms
+        platforms = get_platform_names(doc["_source"]["platforms"])
         if doc["_source"]["cover_url"]==None:
             doc_id = doc["_id"]
             cover_url = get_cover_url(doc["_source"]["igdb_id"])
