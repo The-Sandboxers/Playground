@@ -33,6 +33,24 @@ access_token = fetch_access_token_Twitch(TWITCH_SECRET_KEY, TWITCH_CLIENT_ID)
 # create IGDB wrapper instance
 wrapper = IGDBWrapper(TWITCH_CLIENT_ID, access_token)
 
+'''
+    Converts IGDB platform IDs to platform names.
+    
+    This function accepts a list of one or more IGDB platform IDs, uses
+    the IGDB API to get the platform name for that ID, and returns
+    a list of platform names.
+    
+    Returns: a list of platform names
+'''
+def get_platform_names(platform_ids):
+    platform_names = []
+    for id in platform_ids:
+        time.sleep(.25)
+        res = json.loads(wrapper.api_request('platforms',f'fields name; where id=({str(id)});').decode())
+        platform_names.append(res[0]["name"])
+        print(f"platforms: {platform_names}")
+    return platform_names
+
 
 '''
     Converts Steam IDs to IGDB IDs.
