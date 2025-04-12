@@ -17,7 +17,9 @@ class User(db.Model):
     password_hash: Mapped[str] = mapped_column(String(255))
     steam_id: Mapped[Optional[str]] = mapped_column(String(17))
     games: Mapped[List["UserGame"]] = relationship(back_populates="user")
-    
+    show_pc: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    show_xbox: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    show_switch: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     def to_dict(self):
         return {"id": self.id, "username": self.username, "email": self.email, "steam_id": self.steam_id}
     
