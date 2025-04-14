@@ -18,7 +18,6 @@ class User(db.Model):
     steam_id: Mapped[Optional[str]] = mapped_column(String(17))
     games: Mapped[List["UserGame"]] = relationship(back_populates="user")
     show_windows: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
-    show_xbox: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     show_playstation_5: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     show_xbox_series_sx: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     show_playstation_4: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
