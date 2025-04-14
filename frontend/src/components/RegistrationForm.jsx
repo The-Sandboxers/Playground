@@ -59,6 +59,7 @@ export default function RegistrationForm ({
 
   const navigate = useNavigate();
   const [registrationStatus, setRegistrationStatus] = useState(logInErrors.DEFAULT);
+  const [errorMessage, setErrorMessage] = useState("")
 
   
   const onSubmit = async (signUpData) => {
@@ -70,6 +71,7 @@ export default function RegistrationForm ({
       if(success){
         console.log("Registration Succesful",data)
         setRegistrationStatus("successful")
+        setErrorMessage("")
 
         // get the user logged in so we can navigate to profile
         const loginData = {"username": signUpData.username, "password": signUpData.password};
@@ -84,6 +86,7 @@ export default function RegistrationForm ({
         // If response not ok, but received, notify user of error
         console.log("Registration unsuccessful: ", data)
         setRegistrationStatus("unsuccesful")
+        setErrorMessage(data.error)
       }
     }catch(error){
       // If response failed, 
@@ -140,6 +143,9 @@ export default function RegistrationForm ({
               {/* Might want to change this s.t. the user knows why an error occurred, (account already exists, username, etc.) */}
               {/* <p className="text-destructive text-md">There was an error registering your account.</p>
             </div>)} */}
+            {errorMessage !== "" && (<div className="flex flex-col gap-3">
+              <p className="text-destructive text-md">{errorMessage}</p>
+            </div>)}
           {registrationStatus === "successful" && 
           (<div className="flex flex-col gap-3">
             {/* Might want to change this s.t. the user knows why an error occurred, (account already exists, username, etc.) */}
