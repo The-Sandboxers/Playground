@@ -347,7 +347,7 @@ def add_games():
 @jwt_required()
 def add_games():
     """
-    Removes games sent from request, from user info
+    Given a list, removes all games from the user profile.
     
     This DELETE route gets a list of games to be deleted from the json request,
     checks if the game is under the user's id, and deletes the matching record from the database.
