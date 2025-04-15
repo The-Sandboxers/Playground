@@ -309,7 +309,11 @@ def remove_steam_id():
 
 
 
-'''
+
+@app.route("/profile/add_games", methods=["DELETE"])
+@jwt_required()
+def add_games():
+    '''
     Manually adds a list of games to the user's played games.
     
     This POST route retrieves the username from the JWT and a list of 
@@ -319,10 +323,7 @@ def remove_steam_id():
     Returns:
         Response: a json object with the username and the array of games
         added to the UserGames table
-'''  
-@app.route("/profile/add_games", methods=["POST"])
-@jwt_required()
-def add_games():
+    '''  
     try:
         username = get_jwt_identity()
         user = User.query.filter_by(username=username).first()
@@ -338,6 +339,67 @@ def add_games():
         return jsonify(user=username, added_games=added_games), 200
     except:
         return jsonify(error="Error adding games"), 500
+    
+    
+    
+
+@app.route("/profile/remove_games", methods=["DELETE"])
+@jwt_required()
+def add_games():
+    """
+    Removes games sent from request, from user info
+    
+    This DELETE route gets a list of games to be deleted from the json request,
+    checks if the game is under the user's id, and deletes the matching record from the database.
+    Returns the list of deleted game ids.
+
+    Returns:
+        Response: a json object with the username and the array of games deleted
+        from the UserGames table.
+    """
+    try:
+        username = get_jwt_identity()
+        user = User.query.filter_by(username=username).first()
+        games_list = request.json.get("removed_games")
+        removed_games = []
+        for game_id in games_list:
+            # check that game does not already have a record for this user
+            deleted_game = UserGame.query.filter_by(user_id=user.id, igdb_id=game_id).first()
+            if deleted_game is not None:
+                db.session.delete(deleted_game)
+                db.session.commit()
+                removed_games.append(game_id)
+        return jsonify(user=username, removed_games=removed_games), 200
+    except:
+        return jsonify(error="Error removing games"), 500
+
+@app.route("/profile/remove_all_games", methods=["DELETE"])
+@jwt_required()
+def add_games():
+    """
+    Removes all games from user profile.
+    
+    This DELETE route deletes all records under the user's id from the database.
+    Returns the list of deleted game ids and a message confirming deletion.
+
+    Returns:
+        Response: a json object with the username, the array of games deleted
+        from the UserGames table, a message, and a 200 success.
+    """
+    try:
+        username = get_jwt_identity()
+        user = User.query.filter_by(username=username).first()
+        removed_games = []
+        # Get full user games list from postgres
+        user_games_list = UserGame.query.filter_by(user_id=user.id).all()
+        # remove each game in user played games list
+        for game in user_games_list:
+            db.session.delete(game)
+            db.session.commit()
+            removed_games.append(game.igdb_id)
+        return jsonify(user=username, removed_games=removed_games, message="All games removed"), 200
+    except:
+        return jsonify(error="Error removing games"), 500
 
 
 
