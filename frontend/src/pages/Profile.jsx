@@ -28,6 +28,43 @@ export default function Profile()
 
 
     useEffect(() => {
+        const handleSteamCallback = async () => {
+            // Only handle Steam OpenID if login was initiated from this tab
+            if (sessionStorage.getItem("steamLoginStarted") !== "true") return;
+    
+            // Clear the flag immediately to prevent re-runs
+            sessionStorage.removeItem("steamLoginStarted");
+    
+            const params = new URLSearchParams(window.location.search);
+            const claimedId = params.get("openid.claimed_id");
+            const openidMode = params.get("openid.mode");
+            const openidSig = params.get("openid.sig");
+    
+            if (claimedId && openidMode === "id_res" && openidSig) {
+                try {
+                    const { success, data } = await requestBackend(
+                        "POST",
+                        "http://127.0.0.1:5000/profile/steam/callback",
+                        "access",
+                        { steamId: claimedId, openidMode, openidSig }
+                    );
+    
+                    if (success) {
+                        await requestBackend("POST", "http://127.0.0.1:5000/profile/load_games_steam");
+                        setHasSteamID(true);
+                        // Clean up the URL
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                    }
+                } catch (error) {
+                    console.error("Steam OpenID callback failed:", error);
+                }
+            }
+        };
+    
+        handleSteamCallback();
+    }, []);
+    
+    useEffect(() => {
         const fetchProfile = async () => {
             try {
                 const {success, data} = await requestBackend("GET", "http://127.0.0.1:5000/profile");
@@ -49,6 +86,8 @@ export default function Profile()
         fetchProfile();
     }, []);
 
+
+
     async function signOut() {
         try {
             const {success, data} = await requestBackend("DELETE", "http://127.0.0.1:5000/logout");
@@ -67,17 +106,16 @@ export default function Profile()
         if (!hasSteamID) {
             try {
                 await steamAuth()
-                await redirectBack()
-                const { success, data } = await requestBackend("POST", "http://127.0.0.1:5000/profile/load_games_steam")
-                setHasSteamID(true);
             } catch (error) {
                 console.log(error);
             }
         } else {
             console.log('removing steam')
-            const {data, code} = await requestBackend("DELETE", "http://127.0.0.1:5000/profile/remove_steam_id");
+            const {success, code} = await requestBackend("DELETE", "http://127.0.0.1:5000/profile/remove_steam_id");
             console.log(code);
+            if(success){
                 setHasSteamID(false);
+            }
         }
     }
 

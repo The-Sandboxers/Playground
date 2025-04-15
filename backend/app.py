@@ -7,7 +7,7 @@ from config import ApplicationConfig
 from urllib.parse import urlencode
 from elasticsearch import Elasticsearch
 from dotenv import load_dotenv
-from helpers import get_owned_steam_game_ids, get_cover_url, get_igdb_ids, verify_open_id
+from helpers import get_owned_steam_game_ids, get_cover_url, get_igdb_ids, verify_open_id, get_platform_names
 import os
 import logging
 import redis
@@ -309,7 +309,11 @@ def remove_steam_id():
 
 
 
-'''
+
+@app.route("/profile/add_games", methods=["POST"])
+@jwt_required()
+def add_games():
+    '''
     Manually adds a list of games to the user's played games.
     
     This POST route retrieves the username from the JWT and a list of 
@@ -319,10 +323,7 @@ def remove_steam_id():
     Returns:
         Response: a json object with the username and the array of games
         added to the UserGames table
-'''  
-@app.route("/profile/add_games", methods=["POST"])
-@jwt_required()
-def add_games():
+    '''  
     try:
         username = get_jwt_identity()
         user = User.query.filter_by(username=username).first()
@@ -338,6 +339,96 @@ def add_games():
         return jsonify(user=username, added_games=added_games), 200
     except:
         return jsonify(error="Error adding games"), 500
+    
+    
+    
+
+@app.route("/profile/remove_games", methods=["DELETE"])
+@jwt_required()
+def remove_games():
+    """
+    Given a list, removes all games from the user profile.
+    
+    This DELETE route gets a list of games to be deleted from the json request,
+    checks if the game is under the user's id, and deletes the matching record from the database.
+    Returns the list of deleted game ids.
+
+    Returns:
+        Response: a json object with the username and the array of games deleted
+        from the UserGames table.
+    """
+    try:
+        username = get_jwt_identity()
+        user = User.query.filter_by(username=username).first()
+        games_list = request.json.get("removed_games")
+        removed_games = []
+        for game_id in games_list:
+            # check that game does not already have a record for this user
+            deleted_game = UserGame.query.filter_by(user_id=user.id, igdb_id=game_id).first()
+            if deleted_game is not None:
+                db.session.delete(deleted_game)
+                db.session.commit()
+                removed_games.append(game_id)
+        return jsonify(user=username, removed_games=removed_games), 200
+    except:
+        return jsonify(error="Error removing games"), 500
+
+@app.route("/profile/remove_all_games", methods=["DELETE"])
+@jwt_required()
+def remove_all_games():
+    """
+    Removes all games from user profile.
+    
+    This DELETE route deletes all records under the user's id from the database.
+    Returns the list of deleted game ids and a message confirming deletion.
+
+    Returns:
+        Response: a json object with the username, the array of games deleted
+        from the UserGames table, a message, and a 200 success.
+    """
+    try:
+        username = get_jwt_identity()
+        user = User.query.filter_by(username=username).first()
+        removed_games = []
+        # Get full user games list from postgres
+        user_games_list = UserGame.query.filter_by(user_id=user.id).all()
+        # remove each game in user played games list
+        for game in user_games_list:
+            db.session.delete(game)
+            db.session.commit()
+            removed_games.append(game.igdb_id)
+        return jsonify(user=username, removed_games=removed_games, message="All games removed"), 200
+    except:
+        return jsonify(error="Error removing games"), 500
+
+
+
+'''
+    TODO: finish writing this comment
+    
+    This POST route retrieves the username from the JWT and a list
+    of dictionary items of the platform statuses, ...
+    
+    Returns:
+        Response: 
+'''  
+@app.route("/profile/edit_platforms", methods=["POST"])
+@jwt_required()
+def edit_platforms():
+    try:
+        username = get_jwt_identity()
+        user = User.query.filter_by(username=username).first()
+        platforms_list = request.json.get("platforms")
+        print(type(platforms_list))
+        
+        for platform_pair in platforms_list:
+            platform = list(platform_pair.keys())[0]
+            platform_value = list(platform_pair.values())[0]
+            # TODO: commit this information to postgres
+
+        return jsonify(error="Not implemented yet"), 500
+    except:
+        return jsonify(error="Error editing platforms"), 500
 
 '''
     Checks the health of the ElasticSearch cluster.
@@ -597,7 +688,11 @@ def recommendation_algorithm():
             dict_item = {}
             dict_item["_id"]=doc_id
             unlike_docs.append(dict_item)
-            
+
+    # TODO: Get the user's chosen platforms from their profile
+    # create a list of platforms that the user does actually have
+    user_platforms = []
+
     query ={
         "more_like_this" : {
         "fields" : ["keywords"],
@@ -612,7 +707,9 @@ def recommendation_algorithm():
     result = es.search(index=index, query=query, size=10)
     doc_games = []
     for doc in result["hits"]["hits"]:
-    # load cover URL into ElasticSearch if it hasn't already been loaded    
+    # load cover URL into ElasticSearch if it hasn't already been loaded
+        # TODO: check for platforms matching user platforms
+        platforms = get_platform_names(doc["_source"]["platforms"])
         if doc["_source"]["cover_url"]==None:
             doc_id = doc["_id"]
             cover_url = get_cover_url(doc["_source"]["igdb_id"])
