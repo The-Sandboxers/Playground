@@ -310,7 +310,7 @@ def remove_steam_id():
 
 
 
-@app.route("/profile/add_games", methods=["DELETE"])
+@app.route("/profile/add_games", methods=["POST"])
 @jwt_required()
 def add_games():
     '''
@@ -345,7 +345,7 @@ def add_games():
 
 @app.route("/profile/remove_games", methods=["DELETE"])
 @jwt_required()
-def add_games():
+def remove_games():
     """
     Given a list, removes all games from the user profile.
     
@@ -375,7 +375,7 @@ def add_games():
 
 @app.route("/profile/remove_all_games", methods=["DELETE"])
 @jwt_required()
-def add_games():
+def remove_all_games():
     """
     Removes all games from user profile.
     
