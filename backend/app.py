@@ -134,12 +134,14 @@ def login_user():
     
     This GET route retrieves the username from the JWT, gets
     that user's played and liked games from the UserGame table, 
-    grabs the information about those games from ElasticSearch, 
-    and returns all of the game information.
+    gets their chosen platforms from the User table,
+    grabs the information about their games from ElasticSearch, 
+    and returns all of the game and platform information.
     
     Returns:
-        Response: a json object with the username, an array of played
-        game ids, an array of liked game ids, an array of full played game 
+        Response: a json object with the username, an array
+        of selected platform names, an array of played game ids, 
+        an array of liked game ids, an array of full played game 
         information (sources), and an array of full liked game information
         (sources)
 '''  
@@ -149,6 +151,7 @@ def user_profile():
     username = get_jwt_identity()
     user = User.query.filter_by(username=username).first()
     steam_id_exists = user.steam_id is not None
+    platforms = []
     played_games_ids = []
     played_games = []
     liked_games_ids = []
@@ -172,7 +175,6 @@ def user_profile():
                 doc["_source"]["cover_url"]=[cover_url]
                 es.update(index=index, id=doc_id, body={"doc":doc["_source"]})            
             
-            #TODO: should we add disliked games to this?
             # If game is liked append it to ids and list of sources    
             if game.liked_status == True:
                 liked_games_ids.append(game.igdb_id)
@@ -180,8 +182,27 @@ def user_profile():
             if game.played_status == True:
                 played_games_ids.append(game.igdb_id)
                 played_games.append(doc["_source"])
+
+            # get user's selected platforms
+            if user.show_pc_windows == True:
+                platforms.append("PC_Windows")
+            if user.show_playstation_5 == True:
+                platforms.append("Playstation_5")
+            if user.show_xbox_series_x_s == True:
+                platforms.append("Xbox_Series_X_S")
+            if user.show_playstation_4 == True:
+                platforms.append("Playstation_4")
+            if user.show_xbox_one == True:
+                platforms.append("Xbox_One")
+            if user.show_linux == True:
+                platforms.append("Linux")
+            if user.show_mac == True:
+                platforms.append("Mac")
+            if user.show_nintendo_switch == True:
+                platforms.append("Nintendo_Switch")
         
     return jsonify({"username": user.username,
+                    "platforms": platforms,
                     "played_games": played_games_ids,
                     "liked_games": liked_games_ids,
                     "played_games_sources": played_games,
