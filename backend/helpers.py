@@ -16,6 +16,8 @@ TWITCH_CLIENT_ID = os.getenv('TWITCH_CLIENT_ID')
 # store empty API result string
 EMPTY_API_RESULT = b'[]'
 
+# store dictionary of platform names and numbers
+PLATFORMS = {"show_pc_windows":6, "show_playstation_5":167, "show_xbox_series_x_s":169, "show_playstation_4": 48, "show_xbox_one":49, "show_linux":3, "show_mac":14,"show_nintendo_switch":130}
 
 '''
     Fetches the Twitch access token for the given secret key and client id.
@@ -33,24 +35,18 @@ access_token = fetch_access_token_Twitch(TWITCH_SECRET_KEY, TWITCH_CLIENT_ID)
 # create IGDB wrapper instance
 wrapper = IGDBWrapper(TWITCH_CLIENT_ID, access_token)
 
-'''
-    Converts IGDB platform IDs to platform names.
-    
-    This function accepts a list of one or more IGDB platform IDs, uses
-    the IGDB API to get the platform name for that ID, and returns
-    a list of platform names.
-    
-    Returns: a list of platform names
-'''
-def get_platform_names(platform_ids):
-    platform_names = []
-    for id in platform_ids:
-        time.sleep(.25)
-        res = json.loads(wrapper.api_request('platforms',f'fields name; where id=({str(id)});').decode())
-        platform_names.append(res[0]["name"])
-        print(f"platforms: {platform_names}")
-    return platform_names
 
+'''
+    Converts Platform strings to IGDB platform IDs.
+    
+    This function accepts a platform string, uses
+    the platforms dictionary get the IGDB ID for the platform, and returns
+    the IGDB platform ID.
+    
+    Returns: a list of IGDB platform IDs
+'''
+def get_platform_ids(platform_str):
+    return PLATFORMS[platform_str]
 
 '''
     Converts Steam IDs to IGDB IDs.
