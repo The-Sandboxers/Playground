@@ -86,6 +86,17 @@ def register_user():
     # Create user
     new_user = User(email=email,username=username,password_hash=hashed_password)
     db.session.add(new_user)
+
+    # set user's platform choices to be all true (show games from all platforms)
+    new_user.show_pc_windows = True
+    new_user.show_playstation_5 = True
+    new_user.show_xbox_series_x_s = True
+    new_user.show_playstation_4 = True
+    new_user.show_xbox_one = True
+    new_user.show_linux = True
+    new_user.show_mac = True
+    new_user.show_nintendo_switch = True
+
     db.session.commit()
     
     return jsonify({
