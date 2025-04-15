@@ -7,7 +7,7 @@ from config import ApplicationConfig
 from urllib.parse import urlencode
 from elasticsearch import Elasticsearch
 from dotenv import load_dotenv
-from helpers import get_owned_steam_game_ids, get_cover_url, get_igdb_ids, verify_open_id, get_platform_names
+from helpers import get_owned_steam_game_ids, get_cover_url, get_igdb_ids, verify_open_id, get_platform_ids
 import os
 import logging
 import redis
@@ -342,13 +342,14 @@ def add_games():
 
 
 '''
-    TODO: finish writing this comment
+    Edits a user's selected platforms in Postgres.
     
     This POST route retrieves the username from the JWT and a list
-    of dictionary items of the platform statuses, ...
+    of dictionary items of the platform statuses and updates the 
+    "show_platform" booleans in the User table
     
     Returns:
-        Response: 
+        Response: a JSON object containing a message and a status code.
 '''  
 @app.route("/profile/edit_platforms", methods=["POST"])
 @jwt_required()
@@ -357,16 +358,36 @@ def edit_platforms():
         username = get_jwt_identity()
         user = User.query.filter_by(username=username).first()
         platforms_list = request.json.get("platforms")
-        print(type(platforms_list))
         
         for platform_pair in platforms_list:
             platform = list(platform_pair.keys())[0]
-            platform_value = list(platform_pair.values())[0]
-            # TODO: commit this information to postgres
+            platform_value = list(platform_pair.values())[0]=="True"
+            ''' required to do a manual switch because postgres does
+            not allow for a variable to used as the column name
+            when doing assignments '''
+            match platform:
+                case "PC_Windows":
+                    user.show_pc_windows = platform_value
+                case "PlayStation_5":
+                    user.show_playstation_5 = platform_value
+                case "Xbox_Series_X_S":
+                    user.show_xbox_series_x_s = platform_value
+                case "PlayStation_4":
+                    user.show_playstation_4 = platform_value
+                case "Xbox_One":
+                    user.show_xbox_one = platform_value
+                case "Linux":
+                    user.show_linux = platform_value
+                case "Mac":
+                    user.show_mac = platform_value
+                case "Nintendo_Switch":
+                    user.show_nintendo_switch = platform_value
 
-        return jsonify(error="Not implemented yet"), 500
-    except:
-        return jsonify(error="Error editing platforms"), 500
+            db.session.commit()
+
+        return jsonify(result="Successfully updated platforms"), 200
+    except Exception as e:
+        return jsonify(error="Error updating platforms"), 500
 
 '''
     Checks the health of the ElasticSearch cluster.
@@ -567,9 +588,9 @@ def load_games_from_steam():
 '''
     Loads recommendations based on a user's profile.
     
-    This POST route retrieves the user's played games, ...
-
-    TODO: update this after merging in branch
+    This POST route retrieves the user's played games, liked games,
+    disliked games, and platform information from their profile, 
+    and uses this to query ElasticSearch for game recommendations.
     
     Returns:
         Response: a json object with an array of the game information
@@ -627,9 +648,27 @@ def recommendation_algorithm():
             dict_item["_id"]=doc_id
             unlike_docs.append(dict_item)
 
-    # TODO: Get the user's chosen platforms from their profile
-    # create a list of platforms that the user does actually have
+    # Get the user's chosen platforms from their profile
     user_platforms = []
+    ''' required to do a manual if statement for each
+     platform because postgres does not allow for a variable 
+     to used as the column name when getting values'''
+    if user.show_pc_windows == True:
+        user_platforms.append(get_platform_ids("show_pc_windows"))
+    if user.show_playstation_5 == True:
+        user_platforms.append(get_platform_ids("show_playstation_5"))
+    if user.show_xbox_series_x_s == True:
+        user_platforms.append(get_platform_ids("show_xbox_series_x_s"))
+    if user.show_playstation_4 == True:
+        user_platforms.append(get_platform_ids("show_playstation_4"))
+    if user.show_xbox_one == True:
+        user_platforms.append(get_platform_ids("show_xbox_one"))
+    if user.show_linux == True:
+        user_platforms.append(get_platform_ids("show_linux"))
+    if user.show_mac == True:
+        user_platforms.append(get_platform_ids("show_mac"))
+    if user.show_nintendo_switch == True:
+        user_platforms.append(get_platform_ids("show_nintendo_switch"))   
 
     query ={
         "more_like_this" : {
@@ -645,15 +684,15 @@ def recommendation_algorithm():
     result = es.search(index=index, query=query, size=10)
     doc_games = []
     for doc in result["hits"]["hits"]:
-    # load cover URL into ElasticSearch if it hasn't already been loaded
-        # TODO: check for platforms matching user platforms
-        platforms = get_platform_names(doc["_source"]["platforms"])
-        if doc["_source"]["cover_url"]==None:
-            doc_id = doc["_id"]
-            cover_url = get_cover_url(doc["_source"]["igdb_id"])
-            doc["_source"]["cover_url"]=[cover_url]
-            es.update(index=index, id=doc_id, body={"doc":doc["_source"]})
-        doc_games.append(doc["_source"])
+    # check that this game is on a platform that the user has
+        if any(x in doc["_source"]["platforms"] for x in user_platforms):
+        # load cover URL into ElasticSearch if it hasn't already been loaded
+            if doc["_source"]["cover_url"]==None:
+                doc_id = doc["_id"]
+                cover_url = get_cover_url(doc["_source"]["igdb_id"])
+                doc["_source"]["cover_url"]=[cover_url]
+                es.update(index=index, id=doc_id, body={"doc":doc["_source"]})
+            doc_games.append(doc["_source"])
     return jsonify(doc_games)
 
 
