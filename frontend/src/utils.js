@@ -44,6 +44,7 @@ const requestBackend = async (type, url, token_type = "access", data = null) => 
 }
 
 const steamAuth = async () => {
+    sessionStorage.setItem("steamLoginStarted", "true");
     const steamOpenIdUrl = "https://steamcommunity.com/openid/login"; // Replace with the correct OpenID URL if needed
 
     const params = new URLSearchParams({
