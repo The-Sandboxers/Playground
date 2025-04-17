@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FaRegThumbsUp, FaRegThumbsDown, FaXmark } from 'react-icons/fa6';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { requestBackend, steamAuth, redirectBack } from '../utils';
+import { requestBackend, steamAuth } from '../utils';
 import { Button } from "@/components/ui/button";
 
 export default function Profile()
@@ -15,6 +15,7 @@ export default function Profile()
     const [playedGamesData, setPlayedGamesData] = useState([]);
     const [likedGamesData, setLikedGamesData] = useState([]);
     const [hasSteamID, setHasSteamID] = useState(false);
+    const [loadingSteam, setLoadingSteam] = useState(false);
 
 
     useEffect(() => {
@@ -40,10 +41,13 @@ export default function Profile()
                     );
     
                     if (success) {
+                        setLoadingSteam(true);  // start loading
                         await requestBackend("POST", "http://127.0.0.1:5000/profile/load_games_steam");
+                        setLoadingSteam(false); // stop loading
                         setHasSteamID(true);
                         // Clean up the URL
                         window.history.replaceState({}, document.title, window.location.pathname);
+                        window.location.reload();
                     }
                 } catch (error) {
                     console.error("Steam OpenID callback failed:", error);
@@ -154,7 +158,13 @@ export default function Profile()
                 
                 <Button size="lg" variant="secondary" className="font-black text-md mb-4" onClick={signOut}>Sign Out</Button>
                 <h3 className="mb-4">Linked Services:</h3>
-                <Button size="lg" variant="secondary" className="font-black text-md mb-4" onClick={steamToggle}>{hasSteamID ? 'Disconnect from Steam' : 'Connect to Steam'}</Button>
+                <Button size="lg" variant="secondary" className="font-black text-md mb-4" onClick={steamToggle} disabled={loadingSteam}>{hasSteamID ? 'Disconnect from Steam' : 'Connect to Steam'}</Button>
+                {loadingSteam && (
+                    <div className="flex items-center justify-center mt-4">
+                        <div className="w-8 h-8 border-4 border-white border-dashed rounded-full animate-spin"></div>
+                        <span className="ml-2 text-gray-300">Loading Steam games...</span>
+                    </div>
+                )}
             </div>
             <div className="col-span-3 rounded-lg bg-foreground p-5">
                 <p className="mb-4">Played Games</p>
