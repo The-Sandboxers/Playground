@@ -59,17 +59,17 @@ const steamAuth = async () => {
     window.location.href = `${steamOpenIdUrl}?${params.toString()}`;
 }
 
-const redirectBack = async () => {
-    const params = new URLSearchParams(window.location.search);
+// const redirectBack = async () => {
+//     const params = new URLSearchParams(window.location.search);
     
-    const steamId = params.get("openid.claimed_id"); // This contains the Steam ID
-    const openidMode = params.get("openid.mode");
-    const openidSig = params.get("openid.sig");
+//     const steamId = params.get("openid.claimed_id"); // This contains the Steam ID
+//     const openidMode = params.get("openid.mode");
+//     const openidSig = params.get("openid.sig");
 
-    if (steamId && openidMode === "id_res" && openidSig){
-        const {success, data} = requestBackend("POST","http://127.0.0.1:5000/profile/steam/callback","access",{ steamId, openidMode, openidSig })
-        return {success, data}
-    }
-}
+//     if (steamId && openidMode === "id_res" && openidSig){
+//         const {success, data} = requestBackend("POST","http://127.0.0.1:5000/profile/steam/callback","access",{ steamId, openidMode, openidSig })
+//         return {success, data}
+//     }
+// }
 
-export {requestBackend, steamAuth, redirectBack}
+export {requestBackend, steamAuth}

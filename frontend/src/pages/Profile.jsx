@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FaRegThumbsUp, FaRegThumbsDown, FaXmark } from 'react-icons/fa6';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { requestBackend, steamAuth, redirectBack } from '../utils';
+import { requestBackend, steamAuth } from '../utils';
 import { Button } from "@/components/ui/button";
 
 export default function Profile()
@@ -15,6 +15,9 @@ export default function Profile()
     const [playedGamesData, setPlayedGamesData] = useState([]);
     const [likedGamesData, setLikedGamesData] = useState([]);
     const [hasSteamID, setHasSteamID] = useState(false);
+
+    const [loadingSteam, setLoadingSteam] = useState(false);
+
     const [platforms, setPlatforms] = useState({
         PC_Windows: false,
         PlayStation_5: false,
@@ -25,6 +28,7 @@ export default function Profile()
         Mac: false,
         Nintendo_Switch: false
     })
+
 
 
     useEffect(() => {
@@ -50,10 +54,13 @@ export default function Profile()
                     );
     
                     if (success) {
+                        setLoadingSteam(true);  // start loading
                         await requestBackend("POST", "http://127.0.0.1:5000/profile/load_games_steam");
+                        setLoadingSteam(false); // stop loading
                         setHasSteamID(true);
                         // Clean up the URL
                         window.history.replaceState({}, document.title, window.location.pathname);
+                        window.location.reload();
                     }
                 } catch (error) {
                     console.error("Steam OpenID callback failed:", error);
@@ -157,6 +164,16 @@ export default function Profile()
         }
     }
 
+    function handleClickAndRefresh(action) {
+        return async (...args) => {
+            try {
+                await action(...args);
+            } finally {
+                window.location.reload();
+            }
+        };
+    }
+
     async function handleCheckboxChange(platformKey, isChecked) {
         const updatedPlatforms = { ...platforms, [platformKey]: isChecked };
         setPlatforms(updatedPlatforms);
@@ -177,7 +194,15 @@ export default function Profile()
                 
                 <Button size="lg" variant="secondary" className="font-black text-md mb-4" onClick={signOut}>Sign Out</Button>
                 <h3 className="mb-4">Linked Services:</h3>
-                <Button size="lg" variant="secondary" className="font-black text-md mb-4" onClick={steamToggle}>{hasSteamID ? 'Disconnect from Steam' : 'Connect to Steam'}</Button>
+
+                <Button size="lg" variant="secondary" className="font-black text-md mb-4" onClick={steamToggle} disabled={loadingSteam}>{hasSteamID ? 'Disconnect from Steam' : 'Connect to Steam'}</Button>
+                {loadingSteam && (
+                    <div className="flex items-center justify-center mt-4">
+                        <div className="w-8 h-8 border-4 border-white border-dashed rounded-full animate-spin"></div>
+                        <span className="ml-2 text-gray-300">Loading Steam games...</span>
+                    </div>
+                )}
+
 
                 {/* Start of Checkbox */}
                 <h3 className="mb-4 mt-12 font-semibold text-white">Platforms</h3>
@@ -297,6 +322,7 @@ export default function Profile()
                     </div>
                 </li>
                 </ul>
+
             </div>
             <div className="col-span-3 rounded-lg bg-foreground p-5">
                 <p className="mb-4">Played Games</p>
@@ -308,9 +334,9 @@ export default function Profile()
                                 <a href={element.url} target="_blank">
                                 <img src={element.cover_url} alt={`Game cover ${index}`} className="object-cover w-full h-full rounded-md" />
                                 </a>
-                                <FaXmark className="absolute top-2 left-2 hidden group-hover:block bg-red-500 text-white px-2 py-1 rounded-md text-2xl cursor-pointer" onClick={() => removePlayedGame(element, index)} title="Remove game"/>
-                                <FaRegThumbsDown className="absolute bottom-2 left-2 hidden group-hover:block bg-red-500 text-white px-2 py-1 rounded-md text-3xl cursor-pointer" onClick={() => dislikeGame(element)} title="Dislike game"/>
-                                <FaRegThumbsUp className="absolute bottom-2 right-2 hidden group-hover:block bg-green-500 text-white px-2 py-1 rounded-md text-3xl cursor-pointer" onClick={() => likeGame(element)} title="Like game"/>
+                                <FaXmark className="absolute top-2 left-2 hidden group-hover:block bg-red-500 text-white px-2 py-1 rounded-md text-2xl cursor-pointer" onClick={handleClickAndRefresh(() => removePlayedGame(element, index))} title="Remove game"/>
+                                <FaRegThumbsDown className="absolute bottom-2 left-2 hidden group-hover:block bg-red-500 text-white px-2 py-1 rounded-md text-3xl cursor-pointer" onClick={handleClickAndRefresh(() => dislikeGame(element))} title="Dislike game"/>
+                                <FaRegThumbsUp className="absolute bottom-2 right-2 hidden group-hover:block bg-green-500 text-white px-2 py-1 rounded-md text-3xl cursor-pointer" onClick={handleClickAndRefresh(() => likeGame(element))} title="Like game"/>
                             </div>
                         ))) : <div></div>}
                     </div>
