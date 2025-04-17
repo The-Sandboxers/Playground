@@ -7,7 +7,7 @@ from config import ApplicationConfig
 from urllib.parse import urlencode
 from elasticsearch import Elasticsearch
 from dotenv import load_dotenv
-from helpers import get_owned_steam_game_ids, get_cover_url, get_igdb_ids, verify_open_id, get_platform_names
+from helpers import get_owned_steam_game_ids, get_cover_url, get_igdb_ids, verify_open_id, get_platform_ids
 import os
 import logging
 import redis
@@ -86,6 +86,17 @@ def register_user():
     # Create user
     new_user = User(email=email,username=username,password_hash=hashed_password)
     db.session.add(new_user)
+
+    # set user's platform choices to be all true (show games from all platforms)
+    new_user.show_pc_windows = True
+    new_user.show_playstation_5 = True
+    new_user.show_xbox_series_x_s = True
+    new_user.show_playstation_4 = True
+    new_user.show_xbox_one = True
+    new_user.show_linux = True
+    new_user.show_mac = True
+    new_user.show_nintendo_switch = True
+
     db.session.commit()
     
     return jsonify({
@@ -134,12 +145,14 @@ def login_user():
     
     This GET route retrieves the username from the JWT, gets
     that user's played and liked games from the UserGame table, 
-    grabs the information about those games from ElasticSearch, 
-    and returns all of the game information.
+    gets their chosen platforms from the User table,
+    grabs the information about their games from ElasticSearch, 
+    and returns all of the game and platform information.
     
     Returns:
-        Response: a json object with the username, an array of played
-        game ids, an array of liked game ids, an array of full played game 
+        Response: a json object with the username, an array
+        of selected platform names, an array of played game ids, 
+        an array of liked game ids, an array of full played game 
         information (sources), and an array of full liked game information
         (sources)
 '''  
@@ -149,6 +162,7 @@ def user_profile():
     username = get_jwt_identity()
     user = User.query.filter_by(username=username).first()
     steam_id_exists = user.steam_id is not None
+    platforms = {}
     played_games_ids = []
     played_games = []
     liked_games_ids = []
@@ -172,7 +186,6 @@ def user_profile():
                 doc["_source"]["cover_url"]=[cover_url]
                 es.update(index=index, id=doc_id, body={"doc":doc["_source"]})            
             
-            #TODO: should we add disliked games to this?
             # If game is liked append it to ids and list of sources    
             if game.liked_status == True:
                 liked_games_ids.append(game.igdb_id)
@@ -180,8 +193,19 @@ def user_profile():
             if game.played_status == True:
                 played_games_ids.append(game.igdb_id)
                 played_games.append(doc["_source"])
+
+            # get user's selected platforms
+            platforms["PC_Windows"] = user.show_pc_windows
+            platforms["PlayStation_5"] = user.show_playstation_5
+            platforms["Xbox_Series_X_S"] = user.show_xbox_series_x_s
+            platforms["PlayStation_4"] = user.show_playstation_4
+            platforms["Xbox_One"] = user.show_xbox_one
+            platforms["Linux"] = user.show_linux
+            platforms["Mac"] = user.show_mac
+            platforms["Nintendo_Switch"] = user.show_nintendo_switch
         
     return jsonify({"username": user.username,
+                    "platforms": platforms,
                     "played_games": played_games_ids,
                     "liked_games": liked_games_ids,
                     "played_games_sources": played_games,
@@ -331,11 +355,15 @@ def add_games():
         added_games = []
         for game_id in games_list:
             # check that game does not already have a record for this user
-            if UserGame.query.filter_by(user_id=user.id, igdb_id=game_id).first() is None:
+            gameQuery = UserGame.query.filter_by(user_id = user.id, igdb_id=game_id).first()
+            if gameQuery is None:
                 new_added_game = UserGame(igdb_id=game_id, user_id=user.id, played_status=True)
                 db.session.add(new_added_game)
                 db.session.commit()
                 added_games.append(game_id)
+            elif gameQuery.played_status == False:
+                gameQuery.played_status = True
+                db.session.commit()
         return jsonify(user=username, added_games=added_games), 200
     except:
         return jsonify(error="Error adding games"), 500
@@ -404,13 +432,14 @@ def remove_all_games():
 
 
 '''
-    TODO: finish writing this comment
+    Edits a user's selected platforms in Postgres.
     
     This POST route retrieves the username from the JWT and a list
-    of dictionary items of the platform statuses, ...
+    of dictionary items of the platform statuses and updates the 
+    "show_platform" booleans in the User table
     
     Returns:
-        Response: 
+        Response: a JSON object containing a message and a status code.
 '''  
 @app.route("/profile/edit_platforms", methods=["POST"])
 @jwt_required()
@@ -419,16 +448,34 @@ def edit_platforms():
         username = get_jwt_identity()
         user = User.query.filter_by(username=username).first()
         platforms_list = request.json.get("platforms")
-        print(type(platforms_list))
         
-        for platform_pair in platforms_list:
-            platform = list(platform_pair.keys())[0]
-            platform_value = list(platform_pair.values())[0]
-            # TODO: commit this information to postgres
+        for platform, platform_value in platforms_list.items():
+            ''' required to do a manual switch because postgres does
+            not allow for a variable to used as the column name
+            when doing assignments '''
+            match platform:
+                case "PC_Windows":
+                    user.show_pc_windows = platform_value
+                case "PlayStation_5":
+                    user.show_playstation_5 = platform_value
+                case "Xbox_Series_X_S":
+                    user.show_xbox_series_x_s = platform_value
+                case "PlayStation_4":
+                    user.show_playstation_4 = platform_value
+                case "Xbox_One":
+                    user.show_xbox_one = platform_value
+                case "Linux":
+                    user.show_linux = platform_value
+                case "Mac":
+                    user.show_mac = platform_value
+                case "Nintendo_Switch":
+                    user.show_nintendo_switch = platform_value
 
-        return jsonify(error="Not implemented yet"), 500
-    except:
-        return jsonify(error="Error editing platforms"), 500
+            db.session.commit()
+
+        return jsonify(result="Successfully updated platforms"), 200
+    except Exception as e:
+        return jsonify(error=str(e)), 500
 
 '''
     Checks the health of the ElasticSearch cluster.
@@ -629,9 +676,9 @@ def load_games_from_steam():
 '''
     Loads recommendations based on a user's profile.
     
-    This POST route retrieves the user's played games, ...
-
-    TODO: update this after merging in branch
+    This POST route retrieves the user's played games, liked games,
+    disliked games, and platform information from their profile, 
+    and uses this to query ElasticSearch for game recommendations.
     
     Returns:
         Response: a json object with an array of the game information
@@ -689,9 +736,27 @@ def recommendation_algorithm():
             dict_item["_id"]=doc_id
             unlike_docs.append(dict_item)
 
-    # TODO: Get the user's chosen platforms from their profile
-    # create a list of platforms that the user does actually have
+    # Get the user's chosen platforms from their profile
     user_platforms = []
+    ''' required to do a manual if statement for each
+     platform because postgres does not allow for a variable 
+     to used as the column name when getting values'''
+    if user.show_pc_windows == True:
+        user_platforms.append(get_platform_ids("show_pc_windows"))
+    if user.show_playstation_5 == True:
+        user_platforms.append(get_platform_ids("show_playstation_5"))
+    if user.show_xbox_series_x_s == True:
+        user_platforms.append(get_platform_ids("show_xbox_series_x_s"))
+    if user.show_playstation_4 == True:
+        user_platforms.append(get_platform_ids("show_playstation_4"))
+    if user.show_xbox_one == True:
+        user_platforms.append(get_platform_ids("show_xbox_one"))
+    if user.show_linux == True:
+        user_platforms.append(get_platform_ids("show_linux"))
+    if user.show_mac == True:
+        user_platforms.append(get_platform_ids("show_mac"))
+    if user.show_nintendo_switch == True:
+        user_platforms.append(get_platform_ids("show_nintendo_switch"))   
 
     query ={
         "more_like_this" : {
@@ -707,15 +772,15 @@ def recommendation_algorithm():
     result = es.search(index=index, query=query, size=10)
     doc_games = []
     for doc in result["hits"]["hits"]:
-    # load cover URL into ElasticSearch if it hasn't already been loaded
-        # TODO: check for platforms matching user platforms
-        platforms = get_platform_names(doc["_source"]["platforms"])
-        if doc["_source"]["cover_url"]==None:
-            doc_id = doc["_id"]
-            cover_url = get_cover_url(doc["_source"]["igdb_id"])
-            doc["_source"]["cover_url"]=[cover_url]
-            es.update(index=index, id=doc_id, body={"doc":doc["_source"]})
-        doc_games.append(doc["_source"])
+    # check that this game is on a platform that the user has
+        if any(x in doc["_source"]["platforms"] for x in user_platforms):
+        # load cover URL into ElasticSearch if it hasn't already been loaded
+            if doc["_source"]["cover_url"]==None:
+                doc_id = doc["_id"]
+                cover_url = get_cover_url(doc["_source"]["igdb_id"])
+                doc["_source"]["cover_url"]=[cover_url]
+                es.update(index=index, id=doc_id, body={"doc":doc["_source"]})
+            doc_games.append(doc["_source"])
     return jsonify(doc_games)
 
 
