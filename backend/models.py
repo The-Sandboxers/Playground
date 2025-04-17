@@ -17,6 +17,14 @@ class User(db.Model):
     password_hash: Mapped[str] = mapped_column(String(255))
     steam_id: Mapped[Optional[str]] = mapped_column(String(17))
     games: Mapped[List["UserGame"]] = relationship(back_populates="user")
+    show_pc_windows: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    show_playstation_5: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    show_xbox_series_x_s: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    show_playstation_4: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    show_xbox_one: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    show_linux: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    show_mac: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    show_nintendo_switch: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     
     def to_dict(self):
         return {"id": self.id, "username": self.username, "email": self.email, "steam_id": self.steam_id}
