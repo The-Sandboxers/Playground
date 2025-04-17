@@ -457,9 +457,7 @@ def edit_platforms():
         user = User.query.filter_by(username=username).first()
         platforms_list = request.json.get("platforms")
         
-        for platform_pair in platforms_list:
-            platform = list(platform_pair.keys())[0]
-            platform_value = list(platform_pair.values())[0]=="True"
+        for platform, platform_value in platforms_list.items():
             ''' required to do a manual switch because postgres does
             not allow for a variable to used as the column name
             when doing assignments '''
@@ -485,7 +483,7 @@ def edit_platforms():
 
         return jsonify(result="Successfully updated platforms"), 200
     except Exception as e:
-        return jsonify(error="Error updating platforms"), 500
+        return jsonify(error=str(e)), 500
 
 '''
     Checks the health of the ElasticSearch cluster.

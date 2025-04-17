@@ -16,14 +16,14 @@ export default function Profile()
     const [likedGamesData, setLikedGamesData] = useState([]);
     const [hasSteamID, setHasSteamID] = useState(false);
     const [platforms, setPlatforms] = useState({
-        windows: false,
-        ps5: false,
-        xboxSeriesX: false,
-        ps4: false,
-        xboxOne: false,
-        linux: false,
-        mac: false,
-        nintendoSwitch: false
+        PC_Windows: false,
+        PlayStation_5: false,
+        Xbox_Series_X_S: false,
+        PlayStation_4: false,
+        Xbox_One: false,
+        Linux: false,
+        Mac: false,
+        Nintendo_Switch: false
     })
 
 
@@ -155,17 +155,17 @@ export default function Profile()
         }
     }
 
-    const handleCheckboxChange = (platformKey, isChecked) => {
-        setPlatforms(prevPlatforms => {
-        const updatedPlatforms = { ...prevPlatforms, [platformKey]: isChecked };
-        // POST request on state change:
-        // axios.post('http://127.0.0.1:5000/edit_platform', updatedPlatforms)
-        //     .then(response => console.log('Checkbox POST Success:', response))
-        //     .catch(error => console.error('Checkbox POST Error:', error));
-        console.log(platformKey)
-        return updatedPlatforms;
-    });
-    };
+    async function handleCheckboxChange(platformKey, isChecked) {
+        const updatedPlatforms = { ...platforms, [platformKey]: isChecked };
+        setPlatforms(updatedPlatforms);
+        const params = {'platforms': updatedPlatforms};
+        const {success, response} = await requestBackend('POST', 'http://127.0.0.1:5000/profile/edit_platforms', 'access', params);
+        if (success) {
+            console.log('Checkbox POST Success:', response);
+        } else {
+            console.error('Checkbox POST Error:', response);
+        }
+    }
 
     return (
         <div className="grid grid-flow-col grid-rows-3 grid-cols-5 gap-4 p-5 font-black text-gray-200 text-2xl">
@@ -185,8 +185,8 @@ export default function Profile()
                     <input
                         id="windows-checkbox"
                         type="checkbox"
-                        checked={platforms.windows}
-                        onChange={(e) => handleCheckboxChange('windows', e.target.checked)}
+                        checked={platforms.PC_Windows}
+                        onChange={(e) => handleCheckboxChange('PC_Windows', e.target.checked)}
                         className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
                     />
                     <label htmlFor="windows-checkbox" className="w-full py-3 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">
@@ -199,8 +199,8 @@ export default function Profile()
                     <input
                         id="ps5-checkbox"
                         type="checkbox"
-                        checked={platforms.ps5}
-                        onChange={(e) => handleCheckboxChange('ps5', e.target.checked)}
+                        checked={platforms.PlayStation_5}
+                        onChange={(e) => handleCheckboxChange('PlayStation_5', e.target.checked)}
                         className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
                     />
                     <label htmlFor="ps5-checkbox" className="w-full py-3 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">
@@ -213,8 +213,8 @@ export default function Profile()
                     <input
                         id="xbox-series-checkbox"
                         type="checkbox"
-                        checked={platforms.xboxSeriesX}
-                        onChange={(e) => handleCheckboxChange('xboxSeriesX', e.target.checked)}
+                        checked={platforms.Xbox_Series_X_S}
+                        onChange={(e) => handleCheckboxChange('Xbox_Series_X_S', e.target.checked)}
                         className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
                     />
                     <label htmlFor="xbox-series-checkbox" className="w-full py-3 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">
@@ -227,8 +227,8 @@ export default function Profile()
                     <input
                         id="ps4-checkbox"
                         type="checkbox"
-                        checked={platforms.ps4}
-                        onChange={(e) => handleCheckboxChange('ps4', e.target.checked)}
+                        checked={platforms.PlayStation_4}
+                        onChange={(e) => handleCheckboxChange('PlayStation_4', e.target.checked)}
                         className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
                     />
                     <label htmlFor="ps4-checkbox" className="w-full py-3 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">
@@ -243,8 +243,8 @@ export default function Profile()
                     <input
                         id="xbox-one-checkbox"
                         type="checkbox"
-                        checked={platforms.xboxOne}
-                        onChange={(e) => handleCheckboxChange('xboxOne', e.target.checked)}
+                        checked={platforms.Xbox_One}
+                        onChange={(e) => handleCheckboxChange('Xbox_One', e.target.checked)}
                         className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
                     />
                     <label htmlFor="xbox-one-checkbox" className="w-full py-3 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">
@@ -257,8 +257,8 @@ export default function Profile()
                     <input
                         id="linux-checkbox"
                         type="checkbox"
-                        checked={platforms.linux}
-                        onChange={(e) => handleCheckboxChange('linux', e.target.checked)}
+                        checked={platforms.Linux}
+                        onChange={(e) => handleCheckboxChange('Linux', e.target.checked)}
                         className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
                     />
                     <label htmlFor="linux-checkbox" className="w-full py-3 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">
@@ -271,8 +271,8 @@ export default function Profile()
                     <input
                         id="mac-checkbox"
                         type="checkbox"
-                        checked={platforms.mac}
-                        onChange={(e) => handleCheckboxChange('mac', e.target.checked)}
+                        checked={platforms.Mac}
+                        onChange={(e) => handleCheckboxChange('Mac', e.target.checked)}
                         className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
                     />
                     <label htmlFor="mac-checkbox" className="w-full py-3 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">
@@ -285,8 +285,8 @@ export default function Profile()
                     <input
                         id="nintendo-switch-checkbox"
                         type="checkbox"
-                        checked={platforms.nintendoSwitch}
-                        onChange={(e) => handleCheckboxChange('nintendoSwitch', e.target.checked)}
+                        checked={platforms.Nintendo_Switch}
+                        onChange={(e) => handleCheckboxChange('Nintendo_Switch', e.target.checked)}
                         className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
                     />
                     <label htmlFor="nintendo-switch-checkbox" className="w-full py-3 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">
