@@ -149,6 +149,16 @@ export default function Profile()
         }
     }
 
+    function handleClickAndRefresh(action) {
+        return async (...args) => {
+            try {
+                await action(...args);
+            } finally {
+                window.location.reload();
+            }
+        };
+    }
+
 
     return (
         <div className="grid grid-flow-col grid-rows-3 grid-cols-5 gap-4 p-5 font-black text-gray-200 text-2xl">
@@ -176,9 +186,9 @@ export default function Profile()
                                 <a href={element.url} target="_blank">
                                 <img src={element.cover_url} alt={`Game cover ${index}`} className="object-cover w-full h-full rounded-md" />
                                 </a>
-                                <FaXmark className="absolute top-2 left-2 hidden group-hover:block bg-red-500 text-white px-2 py-1 rounded-md text-2xl cursor-pointer" onClick={() => removePlayedGame(element, index)} title="Remove game"/>
-                                <FaRegThumbsDown className="absolute bottom-2 left-2 hidden group-hover:block bg-red-500 text-white px-2 py-1 rounded-md text-3xl cursor-pointer" onClick={() => dislikeGame(element)} title="Dislike game"/>
-                                <FaRegThumbsUp className="absolute bottom-2 right-2 hidden group-hover:block bg-green-500 text-white px-2 py-1 rounded-md text-3xl cursor-pointer" onClick={() => likeGame(element)} title="Like game"/>
+                                <FaXmark className="absolute top-2 left-2 hidden group-hover:block bg-red-500 text-white px-2 py-1 rounded-md text-2xl cursor-pointer" onClick={handleClickAndRefresh(() => removePlayedGame(element, index))} title="Remove game"/>
+                                <FaRegThumbsDown className="absolute bottom-2 left-2 hidden group-hover:block bg-red-500 text-white px-2 py-1 rounded-md text-3xl cursor-pointer" onClick={handleClickAndRefresh(() => dislikeGame(element))} title="Dislike game"/>
+                                <FaRegThumbsUp className="absolute bottom-2 right-2 hidden group-hover:block bg-green-500 text-white px-2 py-1 rounded-md text-3xl cursor-pointer" onClick={handleClickAndRefresh(() => likeGame(element))} title="Like game"/>
                             </div>
                         ))) : <div></div>}
                     </div>
