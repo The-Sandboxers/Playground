@@ -162,7 +162,7 @@ def user_profile():
     username = get_jwt_identity()
     user = User.query.filter_by(username=username).first()
     steam_id_exists = user.steam_id is not None
-    platforms = []
+    platforms = {}
     played_games_ids = []
     played_games = []
     liked_games_ids = []
@@ -195,22 +195,14 @@ def user_profile():
                 played_games.append(doc["_source"])
 
             # get user's selected platforms
-            if user.show_pc_windows == True:
-                platforms.append("PC_Windows")
-            if user.show_playstation_5 == True:
-                platforms.append("Playstation_5")
-            if user.show_xbox_series_x_s == True:
-                platforms.append("Xbox_Series_X_S")
-            if user.show_playstation_4 == True:
-                platforms.append("Playstation_4")
-            if user.show_xbox_one == True:
-                platforms.append("Xbox_One")
-            if user.show_linux == True:
-                platforms.append("Linux")
-            if user.show_mac == True:
-                platforms.append("Mac")
-            if user.show_nintendo_switch == True:
-                platforms.append("Nintendo_Switch")
+            platforms["PC_Windows"] = user.show_pc_windows
+            platforms["PlayStation_5"] = user.show_playstation_5
+            platforms["Xbox_Series_X_S"] = user.show_xbox_series_x_s
+            platforms["PlayStation_4"] = user.show_playstation_4
+            platforms["Xbox_One"] = user.show_xbox_one
+            platforms["Linux"] = user.show_linux
+            platforms["Mac"] = user.show_mac
+            platforms["Nintendo_Switch"] = user.show_nintendo_switch
         
     return jsonify({"username": user.username,
                     "platforms": platforms,

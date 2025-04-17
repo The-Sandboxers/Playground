@@ -76,6 +76,8 @@ export default function Profile()
                     setPlayedGamesData(data.played_games_sources);
                     setLikedGamesData(data.liked_games_sources);
                     setHasSteamID(data.steam_id_exists);
+                    setPlatforms(data.platforms);
+                    console.log(data.platforms)
                 }
                 
             } catch (error) {
